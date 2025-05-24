@@ -1,10 +1,10 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field
 
-from app.models.attachments import Attachment
-from app.models.general import TenderInfo
-from app.models.items import Item
-from app.models.tender_requirements import GeneralRequirements
+from app.schemas.attachments import Attachment
+from app.schemas.general import TenderInfo
+from app.schemas.items import Item
+from app.schemas.tender_requirements import GeneralRequirements
 
 
 class TenderData(BaseModel):

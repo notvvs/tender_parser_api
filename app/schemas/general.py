@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field
-from app.models.items import Price
+from app.schemas.items import Price
 
 
 class DeliveryInfo(BaseModel):
