@@ -1,6 +1,6 @@
-from app.parsers.tender_feature_parsers.delivery_address import get_delivery_address
-from app.parsers.tender_feature_parsers.delivery_conditions import get_delivery_conditions
-from app.parsers.tender_feature_parsers.delivery_term import get_delivery_term
+from app.parsers.tender_feature_parsers.delivery_features.delivery_address import get_delivery_address
+from app.parsers.tender_feature_parsers.delivery_features.delivery_conditions import get_delivery_conditions
+from app.parsers.tender_feature_parsers.delivery_features.delivery_term import get_delivery_term
 from app.schemas.general import DeliveryInfo
 
 
