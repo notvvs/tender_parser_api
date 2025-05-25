@@ -4,9 +4,8 @@ from datetime import datetime
 
 
 def setup_logging():
-    """
-    Настраивает логирование для приложения
-    """
+    """Настраивает логирование для приложения"""
+
     # Создаем директорию для логов, если она не существует
     log_dir = "logs"
     if not os.path.exists(log_dir):
