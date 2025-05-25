@@ -7,7 +7,6 @@ from app.parsers.tender_feature_parsers.tender_features.purchase_type import get
 from app.parsers.tender_feature_parsers.tender_features.tender_name import get_tender_name
 from app.parsers.tender_feature_parsers.tender_features.tender_number import get_tender_number
 from app.schemas.general import TenderInfo
-from app.utils.create_driver import create_driver
 
 
 def get_tender_info(driver):
@@ -29,8 +28,4 @@ def get_tender_info(driver):
                       deliveryInfo=deliveryInfo,
                       financingSource=financingSource,
                       paymentInfo=paymentInfo
-                      ).model_dump_json()
-
-driver = create_driver()
-driver.get('https://zakupki.gov.ru/epz/order/notice/ea20/view/common-info.html?regNumber=0372200001725000078')
-print(get_tender_info(driver))
+                      )

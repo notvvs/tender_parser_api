@@ -17,23 +17,19 @@ def is_paste_format(driver: WebDriver) -> bool:
         return False
 
 
-def expand_collapse_blocks(driver: WebDriver):
-    """Раскрытие всех свернутых блоков (для формата paste)"""
-    try:
-        collapse_titles = driver.find_elements(By.CSS_SELECTOR,
-                                               "div.collapse__title:not(.collapse__title_opened)")
-
-        if collapse_titles:
-            logger.info(f"Найдено {len(collapse_titles)} свернутых блоков")
-
-        for i, title in enumerate(collapse_titles):
-            try:
-                driver.execute_script("arguments[0].click();", title)
-                import time
-                time.sleep(0.5)
-                logger.debug(f"Раскрыт блок {i + 1}/{len(collapse_titles)}")
-            except Exception as e:
-                logger.warning(f"Не удалось раскрыть блок {i + 1}: {e}")
-                continue
-    except Exception as e:
-        logger.error(f"Ошибка при раскрытии блоков: {e}")
+def get_file_type(icon_src: str) -> str:
+    """Определяет тип файла по URL иконки"""
+    if 'docx' in icon_src:
+        return 'docx'
+    elif 'doc' in icon_src:
+        return 'doc'
+    elif 'xlsx' in icon_src:
+        return 'xlsx'
+    elif 'xls' in icon_src:
+        return 'xls'
+    elif 'pdf' in icon_src:
+        return 'pdf'
+    elif 'zip' in icon_src or 'rar' in icon_src:
+        return 'archive'
+    else:
+        return 'document'

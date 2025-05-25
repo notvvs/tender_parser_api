@@ -73,31 +73,42 @@ def parse_delivery_term_html(driver: WebDriver) -> Optional[str]:
     try:
         term_parts = []
 
-        # Ищем все секции
+        # Ищем все секции в контейнере
         sections = driver.find_elements(By.CSS_SELECTOR, "section.blockInfo__section")
 
         logger.debug(f"Найдено {len(sections)} секций")
 
         for section in sections:
             try:
-                title = section.find_element(By.CSS_SELECTOR, "span.section__title")
+                # Проверяем наличие заголовка
+                titles = section.find_elements(By.CSS_SELECTOR, "span.section__title")
+                if not titles:
+                    continue
+
+                title = titles[0]
                 title_text = title.text.strip()
 
+                # Дата начала исполнения контракта
                 if "Дата начала исполнения контракта" in title_text:
-                    info = section.find_element(By.CSS_SELECTOR, "span.section__info")
-                    start_text = info.text.strip()
-                    term_parts.append(f"Начало: {start_text}")
-                    logger.debug(f"Найдена дата начала: {start_text}")
+                    infos = section.find_elements(By.CSS_SELECTOR, "span.section__info")
+                    if infos:
+                        start_text = infos[0].text.strip()
+                        if start_text:
+                            term_parts.append(f"Начало: {start_text}")
+                            logger.debug(f"Найдена дата начала: {start_text}")
 
+                # Срок исполнения контракта
                 elif title_text == "Срок исполнения контракта":
                     # Проверяем, что это не секция о финансировании
-                    parent = section.find_element(By.XPATH, "..")
-                    parent_text = parent.text
+                    parent_text = section.text
                     if "финансирования" not in parent_text:
-                        info = section.find_element(By.CSS_SELECTOR, "span.section__info")
-                        end_text = info.text.strip()
-                        term_parts.append(f"Окончание: {end_text}")
-                        logger.debug(f"Найден срок окончания: {end_text}")
+                        infos = section.find_elements(By.CSS_SELECTOR, "span.section__info")
+                        if infos:
+                            end_text = infos[0].text.strip()
+                            if end_text:
+                                term_parts.append(f"Окончание: {end_text}")
+                                logger.debug(f"Найден срок окончания: {end_text}")
+
             except Exception as e:
                 logger.debug(f"Ошибка при обработке секции: {e}")
                 continue
