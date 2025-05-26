@@ -36,13 +36,14 @@ def get_tender_documents(tender_url: str) -> List[Attachment]:
 
         # Ждем загрузки блока с документами
         wait = WebDriverWait(driver, 10)
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "blockFilesTabDocs")))
-
+        block = wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, "blockFilesTabDocs"))
+        )
         # Раскрываем скрытые документы
         expand_all_documents(driver)
 
         # Находим все строки с документами
-        doc_rows = driver.find_elements(By.CSS_SELECTOR, ".attachment.row")
+        doc_rows = block.find_elements(By.CSS_SELECTOR, ".attachment.row")
 
         for row in doc_rows:
             try:

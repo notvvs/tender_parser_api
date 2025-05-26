@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 
 from app.parsers.all_tender_info import get_tender
-from app.schemas.general import TenderInfo
+from app.schemas.tender import TenderData
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,6 +21,6 @@ app = FastAPI(
 
 
 @app.post('/')
-async def test(url) -> TenderInfo:
+async def test(url) -> TenderData:
     data = get_tender(url)
     return data

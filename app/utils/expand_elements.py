@@ -1,3 +1,5 @@
+import time
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 import logging
@@ -43,5 +45,16 @@ def expand_all_documents(driver):
                 time.sleep(0.5)
             except:
                 continue
+    except:
+        pass
+
+def expand_item_info(driver, item_row):
+    """Разворачивает информацию о товаре, кликая на стрелку"""
+    try:
+        # Находим стрелку для разворачивания
+        chevron = item_row.find_element(By.CSS_SELECTOR, ".chevronRight")
+        driver.execute_script("arguments[0].click();", chevron)
+
+        driver.implicitly_wait(1)
     except:
         pass
