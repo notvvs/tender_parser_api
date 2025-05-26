@@ -1,5 +1,5 @@
-from app.parsers.delivery_info import get_delivery_info
-from app.parsers.payment_info import get_payment_info
+from app.parsers.tender_feature_parsers.delivery_info import get_delivery_info
+from app.parsers.tender_feature_parsers.payment_info import get_payment_info
 from app.parsers.tender_feature_parsers.tender_features.customer_name import get_customer_name
 from app.parsers.tender_feature_parsers.tender_features.financing_source import get_financing_source
 from app.parsers.tender_feature_parsers.tender_features.max_price import get_price_info

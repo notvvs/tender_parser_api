@@ -4,7 +4,8 @@ from selenium.common.exceptions import NoSuchElementException
 from typing import Optional
 import re
 import logging
-from app.utils.format_check import is_paste_format, expand_collapse_blocks
+from app.utils.format_check import is_paste_format
+from app.utils.expand_elements import expand_collapse_blocks
 
 logger = logging.getLogger(__name__)
 

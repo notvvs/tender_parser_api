@@ -2,9 +2,8 @@ import logging
 
 from fastapi import FastAPI
 
-from app.parsers.tender_info import get_tender_info
+from app.parsers.all_tender_info import get_tender
 from app.schemas.general import TenderInfo
-from app.utils.create_driver import create_driver
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,7 +14,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Zakupki.gov.ru Parser API",
+    title="Parser API",
     description="API для парсинга данных с zakupki.gov.ru",
     version="1.0.0"
 )
@@ -23,6 +22,5 @@ app = FastAPI(
 
 @app.post('/')
 async def test(url) -> TenderInfo:
-    driver = create_driver()
-    driver.get(url)
-    return get_tender_info(driver)
+    data = get_tender(url)
+    return data
