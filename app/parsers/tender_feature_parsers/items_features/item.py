@@ -64,31 +64,31 @@ def parse_item_from_row(driver, row, item_id: int) -> Optional[Item]:
                         driver.implicitly_wait(1)
 
                         # Находим блок с характеристиками
-                        try:
-                            info_rows = driver.find_elements(
-                                By.CSS_SELECTOR,
-                                f".truInfo_{info_id}"
-                            )
+                        info_rows = driver.find_elements(
+                            By.CSS_SELECTOR,
+                            f"tr.truInfo_{info_id}"
+                        )
 
-                            for info_row in info_rows:
-                                # Парсим характеристики из таблицы внутри блока
-                                char_table = info_row.find_element(By.CSS_SELECTOR, "table.tableBlock")
-                                characteristics = parse_characteristics_from_table(char_table)
-
-                                # Ищем дополнительные требования
-                                try:
-                                    req_spans = info_row.find_elements(
-                                        By.XPATH,
-                                        ".//span[contains(text(), 'Обоснование включения')]/following-sibling::span"
-                                    )
-                                    if req_spans:
-                                        additional_requirements = req_spans[0].text.strip()
-                                except:
-                                    pass
-                        except:
-                            pass
-        except:
-            pass
+                        # Перебираем строки и ищем ту, которая содержит таблицу с характеристиками
+                        for info_row in info_rows:
+                            try:
+                                # Проверяем, есть ли в этой строке таблица
+                                tables = info_row.find_elements(By.CSS_SELECTOR, "table.tableBlock")
+                                if tables:
+                                    # Проверяем, что это таблица с характеристиками (по заголовку)
+                                    for table in tables:
+                                        try:
+                                            header = table.find_element(By.XPATH,
+                                                                        ".//td[contains(text(), 'Наименование характеристики')]")
+                                            if header:
+                                                characteristics = parse_characteristics_from_table(table)
+                                                break
+                                        except:
+                                            continue
+                            except:
+                                continue
+        except Exception as e:
+            logger.error(f'Ошибка при получения характеристик: {e}')
 
         return Item(
             id=item_id,
