@@ -1,6 +1,7 @@
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 
@@ -45,4 +46,4 @@ def create_driver(headless=True) -> WebDriver:
     # Память
     options.add_argument('--memory-pressure-off')
 
-    return webdriver.Chrome(options=options)
+    return webdriver.Chrome(service=Service(executable_path='C:/Users/ruzik/PycharmProjects/work/parser_service/chromedriver.exe'), options=options)
