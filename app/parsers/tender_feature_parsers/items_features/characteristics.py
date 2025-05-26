@@ -25,7 +25,7 @@ def parse_characteristics_from_table(table_element) -> List[ItemCharacteristic]:
     characteristics = []
 
     try:
-        rows = table_element.find_elements(By.CSS_SELECTOR, "tbody tr")
+        rows = table_element.find_elements(By.CSS_SELECTOR, "tbody tr.tableBlock__row")
 
         char_id = 1
         current_name = None
@@ -39,6 +39,11 @@ def parse_characteristics_from_table(table_element) -> List[ItemCharacteristic]:
             cells = row.find_elements(By.TAG_NAME, "td")
 
             if len(cells) < 2:
+                i += 1
+                continue
+
+            first_cell_text = cells[0].text.strip().upper()
+            if "НАИМЕНОВАНИЕ" in first_cell_text and "ХАРАКТЕРИСТИК" in first_cell_text:
                 i += 1
                 continue
 
@@ -111,6 +116,10 @@ def parse_characteristics_from_table(table_element) -> List[ItemCharacteristic]:
                     value = cells[1].text.strip()
                     unit = cells[2].text.strip() if cells[2].text.strip() else None
                     instruction = cells[3].text.strip() if len(cells) > 3 else ""
+
+                    if name.upper() == "НАИМЕНОВАНИЕ ХАРАКТЕРИСТИКИ":
+                        i += 1
+                        continue
 
                     char_type = parse_characteristic_type(instruction)
                     changeable = parse_characteristic_changeable(instruction)
