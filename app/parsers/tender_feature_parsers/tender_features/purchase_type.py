@@ -1,6 +1,7 @@
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
-def get_purchase_type(driver) -> str:
+def get_purchase_type(driver: WebDriver) -> str:
     """Извлечение способа закупки"""
     try:
         return driver.find_element(

@@ -5,10 +5,11 @@ from app.schemas.tender import TenderData
 from app.utils.create_driver import create_driver
 
 
-def get_tender(url):
+def get_tender(url: str) -> TenderData:
+    """Функция для получения всей информации о тендере"""
     driver = create_driver()
-    try:
 
+    try:
         driver.get(url)
 
         tenderInfo = get_tender_info(driver)

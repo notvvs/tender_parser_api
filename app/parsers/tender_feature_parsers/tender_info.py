@@ -1,3 +1,5 @@
+from selenium.webdriver.chrome.webdriver import WebDriver
+
 from app.parsers.tender_feature_parsers.delivery_info import get_delivery_info
 from app.parsers.tender_feature_parsers.payment_info import get_payment_info
 from app.parsers.tender_feature_parsers.tender_features.customer_name import get_customer_name
@@ -9,8 +11,8 @@ from app.parsers.tender_feature_parsers.tender_features.tender_number import get
 from app.schemas.general import TenderInfo
 
 
-def get_tender_info(driver):
-
+def get_tender_info(driver: WebDriver):
+    """Основная функция для получения всей информации о основных характеристиках тендера"""
     tenderName = get_tender_name(driver)
     tenderNumber = get_tender_number(driver)
     customerName = get_customer_name(driver)

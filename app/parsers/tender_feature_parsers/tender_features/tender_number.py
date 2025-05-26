@@ -1,7 +1,8 @@
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 
-def get_tender_number(driver) -> str:
+def get_tender_number(driver: WebDriver) -> str:
     """Извлечение номера закупки"""
     try:
         text = driver.find_element(

@@ -6,9 +6,7 @@ from app.schemas.items import ItemCharacteristic
 
 
 def parse_characteristic_type(instruction_text: str) -> str:
-    """
-    Определяет тип характеристики по инструкции
-    """
+    """Определяет тип характеристики по инструкции"""
     if "конкретное значение" in instruction_text.lower():
         return "Количественная"
     return "Качественная"

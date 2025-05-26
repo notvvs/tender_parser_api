@@ -20,7 +20,7 @@ def get_currency(driver: WebDriver) :
         return 'RUB'
 
 
-def get_max_price(driver):
+def get_max_price(driver: WebDriver):
     """Извлечение максимальной цены контракта"""
     try:
         price_element = driver.find_element(
@@ -47,7 +47,8 @@ def get_max_price(driver):
         pass
 
 
-def get_price_info(driver) -> Price:
+def get_price_info(driver: WebDriver) -> Price:
+
     max_price = get_max_price(driver)
     currency = get_currency(driver)
 

@@ -1,6 +1,7 @@
 
 from typing import List
 
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -8,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from app.parsers.tender_feature_parsers.items_features.item import parse_item_from_row
 from app.schemas.items import Item
 
-def get_tender_items(driver) -> List[Item]:
+def get_tender_items(driver: WebDriver) -> List[Item]:
     """Основная функция для парсинга товаров тендера"""
     items = []
 
