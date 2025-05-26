@@ -61,8 +61,6 @@ def get_tender_items(driver: WebDriver) -> List[Item]:
 
     except Exception as e:
         logger.error(f"Критическая ошибка при парсинге: {e}")
-    finally:
-        driver.quit()
 
     return items
 

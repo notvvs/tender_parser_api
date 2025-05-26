@@ -1,4 +1,5 @@
 import re
+import logging
 from typing import List
 
 from selenium.webdriver.common.by import By
@@ -10,6 +11,7 @@ from app.utils.create_driver import create_driver
 from app.utils.expand_elements import expand_all_documents
 from app.utils.format_check import get_file_type
 
+logger = logging.getLogger(__name__)
 
 def get_documents_url(tender_url: str) -> str:
     """Преобразует URL общей информации в URL документов"""
@@ -78,10 +80,8 @@ def get_tender_documents(tender_url: str) -> List[Attachment]:
                 documents.append(doc)
 
             except Exception as e:
-                print(f"Ошибка при парсинге документа: {e}")
-                continue
-
-    finally:
-        driver.quit()
+                logger.error(f"Ошибка при парсинге документа: {e}")
+    except Exception as e:
+        logger.error(f'Ошибка при парсинге документов: {e}')
 
     return documents

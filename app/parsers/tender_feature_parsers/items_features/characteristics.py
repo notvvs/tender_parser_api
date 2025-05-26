@@ -1,9 +1,10 @@
 from typing import List
-
+import logging
 from selenium.webdriver.common.by import By
 
 from app.schemas.items import ItemCharacteristic
 
+logger = logging.getLogger(__name__)
 
 def parse_characteristic_type(instruction_text: str) -> str:
     """Определяет тип характеристики по инструкции"""
@@ -159,6 +160,6 @@ def parse_characteristics_from_table(table_element) -> List[ItemCharacteristic]:
             characteristics.append(characteristic)
 
     except Exception as e:
-        print(f"Ошибка при парсинге характеристик из таблицы: {e}")
+        logger.error(f"Ошибка при парсинге характеристик из таблицы: {e}")
 
     return characteristics
