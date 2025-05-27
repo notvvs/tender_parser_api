@@ -3,6 +3,8 @@ import logging
 from fastapi import FastAPI
 
 from app.parsers.all_tender_info import get_tender
+
+from app.repository.database import repository
 from app.schemas.tender import TenderData
 
 logging.basicConfig(
@@ -23,4 +25,5 @@ app = FastAPI(
 @app.post('/')
 async def test(url) -> TenderData:
     data = get_tender(url)
+    await repository.save(data.model_dump())
     return data

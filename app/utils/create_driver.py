@@ -56,7 +56,7 @@ def chrome_options(headless=True) -> Options:
 
 
 @contextmanager
-def get_driver(headless: bool = True, page_load_timeout: int = 5):
+def get_driver(headless: bool = True, page_load_timeout: int = 10):
     """Контекстный менеджер для безопасной работы с драйвером"""
     driver: Optional[WebDriver] = None
     start_time = time.time()
