@@ -64,7 +64,7 @@ class TenderRepository(BaseRepository):
         if existing_tender:
             # Обновляем существующий тендер
             await self.collection.update_one(
-                {"tenderNumber": tender_number},
+                {"tenderInfo.tenderNumber": tender_number},
                 {"$set": data}
             )
             logger.info(f"Обновлен существующий тендер: {tender_number}")
@@ -91,7 +91,7 @@ class TenderRepository(BaseRepository):
 
     async def find_by_tender_number(self, tender_number: str) -> Optional[Dict[str, Any]]:
         """Находит тендер по номеру"""
-        return await self.find_by_field("tender_number", tender_number)
+        return await self.find_by_field("tenderInfo.tenderNumber", tender_number)
 
 
     async def find_all(self, limit: int = 100, skip: int = 0) -> List[Dict[str, Any]]:
