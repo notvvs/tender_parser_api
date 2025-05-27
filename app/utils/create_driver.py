@@ -1,11 +1,17 @@
+import logging
+import time
+from contextlib import contextmanager
+from typing import Optional
 
 from selenium import webdriver
+from selenium.common import WebDriverException
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.webdriver import WebDriver
-from webdriver_manager.chrome import ChromeDriverManager
 
-def create_driver(headless=True) -> WebDriver:
+
+logger = logging.getLogger(__name__)
+
+def chrome_options(headless=True) -> Options:
     """Создает Chrome драйвер с настройками для стабильной работы"""
     options = Options()
 
@@ -46,4 +52,61 @@ def create_driver(headless=True) -> WebDriver:
     # Память
     options.add_argument('--memory-pressure-off')
 
-    return webdriver.Chrome(options=options)
+    return options
+
+
+@contextmanager
+def get_driver(headless: bool = True, page_load_timeout: int = 5):
+    """Контекстный менеджер для безопасной работы с драйвером"""
+    driver: Optional[WebDriver] = None
+    start_time = time.time()
+
+    try:
+        logger.info("Создание Chrome драйвера")
+        options = chrome_options(headless)
+        driver = webdriver.Chrome(options=options)
+
+        # Настройка таймаутов
+        driver.set_page_load_timeout(page_load_timeout)
+
+        logger.info(f"Драйвер создан успешно (session_id: {driver.session_id})")
+        yield driver
+
+    except WebDriverException as e:
+        logger.error(f"Ошибка WebDriver: {e}")
+        raise
+
+    except Exception as e:
+        logger.error(f"Неожиданная ошибка при создании драйвера: {e}", exc_info=True)
+        raise
+
+    finally:
+        if driver:
+            try:
+                # Очистка состояния перед закрытием
+                logger.debug("Очистка состояния драйвера")
+                driver.delete_all_cookies()
+
+                # Очистка localStorage и sessionStorage только если на странице
+                if driver.current_url and driver.current_url != "data:,":
+                    try:
+                        driver.execute_script("window.localStorage.clear();")
+                        driver.execute_script("window.sessionStorage.clear();")
+                    except:
+                        pass  # Может не работать на некоторых страницах
+
+                # Закрытие драйвера
+                logger.info(f"Закрытие драйвера (session_id: {driver.session_id})")
+                driver.quit()
+
+                # Логирование времени работы
+                duration = time.time() - start_time
+                logger.info(f"Сессия драйвера завершена. Продолжительность: {duration:.2f} сек")
+
+            except Exception as e:
+                logger.warning(f"Ошибка при закрытии драйвера: {e}")
+                # Пытаемся принудительно закрыть
+                try:
+                    driver.quit()
+                except:
+                    pass
