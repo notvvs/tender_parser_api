@@ -1,8 +1,8 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-
+from app.core.settings import settings
 from app.repository.repository import TenderRepository
 
-client = AsyncIOMotorClient("mongodb://localhost:27017")
-database = client["tenders_db"]
+client = AsyncIOMotorClient(settings.mongodb_url)
+database = client[settings.mongodb_db_name]
 
 repository = TenderRepository(database, collection_name="tenders")
