@@ -1,57 +1,46 @@
 import re
 
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.webdriver import WebDriver
+from playwright.async_api import Page
 
 from app.schemas.items import Price
 
 
-
-def get_currency(driver: WebDriver) :
+async def get_currency(page: Page) -> str:
     """Извлечение валюты"""
     try:
-        currency_element = driver.find_element(
-            By.XPATH,
-            "//span[text()='Валюта']/following-sibling::span[@class='section__info']"
+        element = await page.query_selector(
+            "span:text('Валюта') ~ span.section__info"
         )
-        currency_text = currency_element.text.strip()
-        return currency_text
-    except:
-        return 'RUB'
-
-
-def get_max_price(driver: WebDriver):
-    """Извлечение максимальной цены контракта"""
-    try:
-        price_element = driver.find_element(
-            By.XPATH,
-            "//section[span[@class='section__title'][contains(text(), 'Начальная (максимальная) цена контракта')]]/span[@class='section__info']"
-        )
-        price_text = price_element.text
-
-        # Очищаем и преобразуем
-        price_text = price_text.replace('\u00A0', ' ').replace('&nbsp;', ' ')
-
-        # Убираем все символы кроме цифр, пробелов, запятых и точек
-        price_text = re.sub(r'[^\d\s,.]', '', price_text)
-
-        # Убираем все пробелы
-        price_text = price_text.replace(' ', '')
-
-        # Заменяем запятую на точку (десятичный разделитель)
-        price_text = price_text.replace(',', '.')
-
-        if price_text:
-            return float(price_text)
+        if element:
+            currency_text = await element.text_content()
+            return currency_text.strip()
     except:
         pass
+    return 'RUB'
 
 
-def get_price_info(driver: WebDriver) -> Price:
+async def get_max_price(page: Page) -> float:
+    """Извлечение максимальной цены контракта"""
+    try:
+        element = await page.query_selector(
+            "section:has(span.section__title:has-text('Начальная (максимальная) цена контракта')) span.section__info"
+        )
+        if element:
+            price_text = await element.text_content()
+            price_text = price_text.replace('\u00A0', ' ').replace('&nbsp;', ' ')
+            price_text = re.sub(r'[^\d\s,.]', '', price_text)
+            price_text = price_text.replace(' ', '').replace(',', '.')
 
-    max_price = get_max_price(driver)
-    currency = get_currency(driver)
+            if price_text:
+                return float(price_text)
+    except:
+        pass
+    return 0.0
 
+
+async def get_price_info(page: Page) -> Price:
+    max_price = await get_max_price(page)
+    currency = await get_currency(page)
     return Price(amount=max_price, currency=currency)
 
 

@@ -1,94 +1,83 @@
+import asyncio
 import logging
 import re
 from typing import Optional
 
-from selenium.webdriver.common.by import By
+from playwright.async_api import Page
 
 from app.parsers.tender_feature_parsers.items_features.characteristics import parse_characteristics_from_table
-from app.parsers.tender_feature_parsers.items_features.codes import extract_okpd2_code, extract_ktru_code
+from app.parsers.tender_feature_parsers.items_features.codes import extract_ktru_code, extract_okpd2_code
 from app.parsers.tender_feature_parsers.items_features.price import parse_price
 from app.parsers.tender_feature_parsers.items_features.quantity import parse_quantity
 from app.schemas.items import Item
 
-
 logger = logging.getLogger(__name__)
 
-
-def parse_item_from_row(driver, row, item_id: int) -> Optional[Item]:
+async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
     """Парсит товар из строки таблицы"""
     try:
-        cells = row.find_elements(By.CSS_SELECTOR, "td.tableBlock__col")
-        if len(cells) < 7:  # Минимум колонок для валидной строки
+        cells = await row.query_selector_all("td.tableBlock__col")
+        if len(cells) < 7:
             return None
 
+        # Извлекаем тексты из ячеек
+        cell_texts = []
+        for cell in cells:
+            text = await cell.text_content()
+            cell_texts.append(text)
+
         # Извлекаем коды
-        code_cell = cells[1].text
+        code_cell = cell_texts[1]
         okpd2_code = extract_okpd2_code(code_cell)
         ktru_code = extract_ktru_code(code_cell)
 
         # Название товара
-        name_cell = cells[2]
-        name_lines = name_cell.text.strip().split('\n')
-        name = name_lines[0].strip()  # Берем первую строку
+        name_lines = cell_texts[2].strip().split('\n')
+        name = name_lines[0].strip()
 
         # Единица измерения
-        unit = cells[3].text.strip()
+        unit = cell_texts[3].strip()
 
         # Количество
-        quantity = parse_quantity(cells[4].text)
+        quantity = parse_quantity(cell_texts[4])
 
-        # Цена за единицу
-        unit_price = parse_price(cells[5].text)
+        # Цены
+        unit_price = parse_price(cell_texts[5])
+        total_price = parse_price(cell_texts[6])
 
-        # Общая стоимость
-        total_price = parse_price(cells[6].text)
-
-        # Инициализируем пустые характеристики
+        # Характеристики
         characteristics = []
         additional_requirements = None
 
-        # Пытаемся найти и развернуть информацию о товаре
+        # Пытаемся получить характеристики
         try:
-            # Находим кнопку разворачивания в первой ячейке
-            chevron = cells[0].find_element(By.CSS_SELECTOR, ".chevronRight")
+            chevron = await cells[0].query_selector(".chevronRight")
             if chevron:
-                # Получаем ID информационного блока из onclick атрибута
-                onclick_attr = chevron.get_attribute("onclick")
+                onclick_attr = await chevron.get_attribute("onclick")
                 if onclick_attr:
                     match = re.search(r"'truInfo_(\d+)'", onclick_attr)
                     if match:
                         info_id = match.group(1)
 
                         # Кликаем для разворачивания
-                        driver.execute_script("arguments[0].click();", chevron)
-                        driver.implicitly_wait(1)
+                        await chevron.click()
+                        await asyncio.sleep(1)
 
-                        # Находим блок с характеристиками
-                        info_rows = driver.find_elements(
-                            By.CSS_SELECTOR,
-                            f"tr.truInfo_{info_id}"
-                        )
+                        # Находим таблицу с характеристиками
+                        info_rows = await page.query_selector_all(f"tr.truInfo_{info_id}")
 
-                        # Перебираем строки и ищем ту, которая содержит таблицу с характеристиками
                         for info_row in info_rows:
-                            try:
-                                # Проверяем, есть ли в этой строке таблица
-                                tables = info_row.find_elements(By.CSS_SELECTOR, "table.tableBlock")
-                                if tables:
-                                    # Проверяем, что это таблица с характеристиками (по заголовку)
-                                    for table in tables:
-                                        try:
-                                            header = table.find_element(By.XPATH,
-                                                                        ".//td[contains(text(), 'Наименование характеристики')]")
-                                            if header:
-                                                characteristics = parse_characteristics_from_table(table)
-                                                break
-                                        except:
-                                            continue
-                            except:
-                                continue
+                            tables = await info_row.query_selector_all("table.tableBlock")
+                            for table in tables:
+                                try:
+                                    header = await table.query_selector("td:has-text('Наименование характеристики')")
+                                    if header:
+                                        characteristics = await parse_characteristics_from_table(table)
+                                        break
+                                except:
+                                    continue
         except Exception as e:
-            logger.error(f'Ошибка при получения характеристик: {e}')
+            logger.error(f'Ошибка при получении характеристик: {e}')
 
         return Item(
             id=item_id,

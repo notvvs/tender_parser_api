@@ -1,4 +1,4 @@
-from selenium.webdriver.chrome.webdriver import WebDriver
+from playwright.async_api import Page
 
 from app.parsers.tender_feature_parsers.payment_features.conditions import get_payment_conditions
 from app.parsers.tender_feature_parsers.payment_features.method import get_payment_method
@@ -6,12 +6,14 @@ from app.parsers.tender_feature_parsers.payment_features.term import get_payment
 from app.schemas.general import PaymentInfo
 
 
-def get_payment_info(driver: WebDriver):
-    """Основная функция для получения всей информации о платежах"""
-    paymentTerm = get_payment_term(driver)
-    paymentMethod = get_payment_method(driver)
-    paymentConditions = get_payment_conditions(driver)
+async def get_payment_info(page: Page):
+    """Основная функция для получения информации о платежах"""
+    paymentTerm = await get_payment_term(page)
+    paymentMethod = await get_payment_method(page)
+    paymentConditions = await get_payment_conditions(page)
 
-    return PaymentInfo(paymentTerm=paymentTerm,
-                       paymentMethod=paymentMethod,
-                       paymentConditions=paymentConditions)
+    return PaymentInfo(
+        paymentTerm=paymentTerm,
+        paymentMethod=paymentMethod,
+        paymentConditions=paymentConditions
+    )

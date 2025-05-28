@@ -1,47 +1,48 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.common.exceptions import NoSuchElementException
-from typing import Optional
-import re
 import logging
+import re
+from typing import Optional
+
+from playwright.async_api import Page
+
 from app.utils.format_check import is_paste_format
 from app.utils.expand_elements import expand_collapse_blocks
 
 logger = logging.getLogger(__name__)
 
-
-def get_delivery_address(driver: WebDriver) -> Optional[str]:
+async def get_delivery_address(page: Page) -> Optional[str]:
     """Главная функция для извлечения адреса доставки"""
     logger.info("Начало извлечения адреса доставки")
 
-    # Проверяем формат страницы
-    if is_paste_format(driver):
-        return parse_delivery_address_paste(driver)
+    if await is_paste_format(page):
+        return await parse_delivery_address_paste(page)
     else:
-        return parse_delivery_address_html(driver)
+        return await parse_delivery_address_html(page)
 
 
-def parse_delivery_address_paste(driver: WebDriver) -> Optional[str]:
+async def parse_delivery_address_paste(page: Page) -> Optional[str]:
     """Извлечение адреса доставки для формата paste"""
     logger.debug("Используется парсер для формата paste")
-    expand_collapse_blocks(driver)
+    await expand_collapse_blocks(page)
+
     try:
-        # В paste формате адрес находится внутри collapse блока
-        sections = driver.find_elements(By.CSS_SELECTOR,
-                                        "div.collapse__content section.blockInfo__section.section")
+        sections = await page.query_selector_all(
+            "div.collapse__content section.blockInfo__section.section"
+        )
 
         logger.debug(f"Найдено {len(sections)} секций в collapse блоках")
 
         for section in sections:
             try:
-                title = section.find_element(By.CSS_SELECTOR, "span.section__title")
-                if "Место поставки товара" in title.text:
-                    info = section.find_element(By.CSS_SELECTOR, "span.section__info")
-                    address = info.text.strip()
-                    # Очищаем от множественных пробелов
-                    address = re.sub(r'\s+', ' ', address)
-                    logger.info(f"Найден адрес доставки: {address[:50]}...")
-                    return address
+                title = await section.query_selector("span.section__title")
+                if title:
+                    title_text = await title.text_content()
+                    if "Место поставки товара" in title_text:
+                        info = await section.query_selector("span.section__info")
+                        if info:
+                            address = await info.text_content()
+                            address = re.sub(r'\s+', ' ', address.strip())
+                            logger.info(f"Найден адрес доставки: {address[:50]}...")
+                            return address
             except Exception as e:
                 logger.debug(f"Ошибка при обработке секции: {e}")
                 continue
@@ -54,25 +55,26 @@ def parse_delivery_address_paste(driver: WebDriver) -> Optional[str]:
     return None
 
 
-def parse_delivery_address_html(driver: WebDriver) -> Optional[str]:
+async def parse_delivery_address_html(page: Page) -> Optional[str]:
     """Извлечение адреса доставки для формата html_content"""
     logger.debug("Используется парсер для формата html_content")
 
     try:
-        # В html_content формате адрес находится в обычных секциях
-        sections = driver.find_elements(By.CSS_SELECTOR, "section.blockInfo__section.section")
-
+        sections = await page.query_selector_all("section.blockInfo__section.section")
         logger.debug(f"Найдено {len(sections)} секций")
 
         for section in sections:
             try:
-                title = section.find_element(By.CSS_SELECTOR, "span.section__title")
-                if "Место поставки товара" in title.text:
-                    info = section.find_element(By.CSS_SELECTOR, "span.section__info")
-                    address = info.text.strip()
-                    address = re.sub(r'\s+', ' ', address)
-                    logger.info(f"Найден адрес доставки: {address[:50]}...")
-                    return address
+                title = await section.query_selector("span.section__title")
+                if title:
+                    title_text = await title.text_content()
+                    if "Место поставки товара" in title_text:
+                        info = await section.query_selector("span.section__info")
+                        if info:
+                            address = await info.text_content()
+                            address = re.sub(r'\s+', ' ', address.strip())
+                            logger.info(f"Найден адрес доставки: {address[:50]}...")
+                            return address
             except Exception as e:
                 logger.debug(f"Ошибка при обработке секции: {e}")
                 continue

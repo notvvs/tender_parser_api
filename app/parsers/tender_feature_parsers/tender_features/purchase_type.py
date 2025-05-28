@@ -1,12 +1,14 @@
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.common.by import By
+from playwright.async_api import Page
 
-def get_purchase_type(driver: WebDriver) -> str:
+
+async def get_purchase_type(page: Page) -> str:
     """Извлечение способа закупки"""
     try:
-        return driver.find_element(
-            By.XPATH,
-            "//section[.//span[text()='Способ определения поставщика (подрядчика, исполнителя)']]/span[@class='section__info']"
-        ).text
+        element = await page.query_selector(
+            "section:has(span:text('Способ определения поставщика (подрядчика, исполнителя)')) span.section__info"
+        )
+        if element:
+            return await element.text_content()
     except:
-        return "Электронный аукцион"
+        pass
+    return "Электронный аукцион"

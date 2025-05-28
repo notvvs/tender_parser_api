@@ -1,45 +1,29 @@
-import time
+import asyncio
 
-from selenium.common import NoSuchElementException
-from selenium.webdriver.common.by import By
-
+from playwright.async_api import Page
 import logging
 
 logger = logging.getLogger(__name__)
 
-def go_to_next_page(driver) -> bool:
-    """Переходит на следующую страницу если она существует"""
+async def go_to_next_page(page: Page) -> bool:
+    """Переходит на следующую страницу"""
     try:
-        # Ищем активный пагинатор
-        paginator = driver.find_element(
-            By.CSS_SELECTOR,
-            "div[id*='truPagingContainer'] .paginator"
-        )
+        paginator = await page.query_selector("div[id*='truPagingContainer'] .paginator")
+        if not paginator:
+            return False
 
-        # Ищем кнопку "следующая" которая НЕ отключена
-        try:
-            next_button = paginator.find_element(
-                By.CSS_SELECTOR,
-                "li.page:not(.disabled) a.next"
-            )
-
-            # Прокручиваем к пагинатору
-            driver.execute_script("arguments[0].scrollIntoView(true);", paginator)
-            time.sleep(0.5)
-
-            # Кликаем по кнопке
-            driver.execute_script("arguments[0].click();", next_button)
-
-            # Ждем обновления таблицы
-            time.sleep(1)
-
-            logger.info("Перешли на следующую страницу")
-            return True
-
-        except NoSuchElementException:
-            # Кнопка следующей страницы не найдена или отключена
+        next_button = await paginator.query_selector("li.page:not(.disabled) a.next")
+        if not next_button:
             logger.info("Достигнута последняя страница")
             return False
+
+        await paginator.scroll_into_view_if_needed()
+        await asyncio.sleep(0.5)
+        await next_button.click()
+        await asyncio.sleep(1)
+
+        logger.info("Перешли на следующую страницу")
+        return True
 
     except Exception as e:
         logger.error(f"Ошибка при переходе на следующую страницу: {e}")

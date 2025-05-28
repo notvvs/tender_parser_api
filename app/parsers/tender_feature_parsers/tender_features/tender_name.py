@@ -1,12 +1,14 @@
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.common.by import By
+from playwright.async_api import Page
 
-def get_tender_name(driver: WebDriver) -> str:
+
+async def get_tender_name(page: Page) -> str:
     """Извлечение наименования закупки"""
     try:
-        return driver.find_element(
-            By.XPATH,
-            "//section[.//span[text()='Наименование объекта закупки']]/span[@class='section__info']"
-        ).text
+        element = await page.query_selector(
+            "section:has(span:text('Наименование объекта закупки')) span.section__info"
+        )
+        if element:
+            return await element.text_content()
     except:
-        return ""
+        pass
+    return ""

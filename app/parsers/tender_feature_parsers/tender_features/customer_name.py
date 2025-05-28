@@ -1,12 +1,14 @@
-from selenium.webdriver.common.by import By
+from playwright.async_api import Page
 
 
-def get_customer_name(driver) -> str:
+async def get_customer_name(page: Page) -> str:
     """Извлечение наименования заказчика"""
     try:
-        return driver.find_element(
-            By.XPATH,
-            "//section[.//span[text()='Организация, осуществляющая размещение']]/span[@class='section__info']"
-        ).text
+        element = await page.query_selector(
+            "section:has(span:text('Организация, осуществляющая размещение')) span.section__info"
+        )
+        if element:
+            return await element.text_content()
     except:
-        return ""
+        pass
+    return ""

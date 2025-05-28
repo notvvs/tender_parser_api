@@ -1,51 +1,46 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.common.exceptions import NoSuchElementException
-from typing import Optional
 import logging
+from typing import Optional
+
+from playwright.async_api import Page
 
 from app.utils.expand_elements import expand_collapse_blocks
 from app.utils.format_check import is_paste_format
 
 logger = logging.getLogger(__name__)
 
-
-def get_payment_method(driver: WebDriver) -> Optional[str]:
+async def get_payment_method(page: Page) -> Optional[str]:
     """Главная функция для извлечения способа оплаты"""
     logger.info("Начало извлечения способа оплаты")
 
-    # Проверяем формат и раскрываем блоки если нужно
-    if is_paste_format(driver):
-        expand_collapse_blocks(driver)
-        return parse_payment_method_paste(driver)
+    if await is_paste_format(page):
+        await expand_collapse_blocks(page)
+        return await parse_payment_method_paste(page)
     else:
-        return parse_payment_method_html(driver)
+        return await parse_payment_method_html(page)
 
 
-def parse_payment_method_paste(driver: WebDriver) -> Optional[str]:
+async def parse_payment_method_paste(page: Page) -> Optional[str]:
     """Извлечение способа оплаты для формата paste"""
     logger.debug("Используется парсер для формата paste")
 
     try:
-        # 1. Ищем прямое указание способа оплаты
-        try:
-            element = driver.find_element(By.XPATH,
-                                          "//div[contains(@class, 'collapse__content')]//section[.//span[@class='section__title'][contains(text(),'Способ оплаты') or contains(text(),'Форма оплаты')]]/span[@class='section__info']"
-                                          )
-            payment_method = element.text.strip()
+        # 1. Прямое указание способа
+        element = await page.query_selector(
+            "div.collapse__content section:has(span.section__title:has-text('Способ оплаты'), span.section__title:has-text('Форма оплаты')) span.section__info"
+        )
+        if element:
+            payment_method = await element.text_content()
             logger.info(f"Найден способ оплаты: {payment_method}")
-            return payment_method
-        except:
-            logger.debug("Прямое указание способа оплаты не найдено")
+            return payment_method.strip()
 
-        # 2. Ищем в условиях оплаты
-        try:
-            element = driver.find_element(By.XPATH,
-                                          "//div[contains(@class, 'collapse__content')]//section[.//span[@class='section__title'][contains(text(),'Условия оплаты') or contains(text(),'Порядок оплаты')]]/span[@class='section__info']"
-                                          )
-            text = element.text.strip().lower()
+        # 2. Ищем в условиях
+        element = await page.query_selector(
+            "div.collapse__content section:has(span.section__title:has-text('Условия оплаты'), span.section__title:has-text('Порядок оплаты')) span.section__info"
+        )
+        if element:
+            text = await element.text_content()
+            text = text.strip().lower()
 
-            # Определяем способ оплаты по ключевым словам
             if "аванс" in text:
                 return "С авансированием"
             elif "предоплат" in text:
@@ -54,12 +49,7 @@ def parse_payment_method_paste(driver: WebDriver) -> Optional[str]:
                 return "По факту поставки"
             elif "безналичн" in text:
                 return "Безналичный расчет"
-            else:
-                logger.debug(f"Способ оплаты не определен из условий: {text[:100]}...")
-        except:
-            logger.debug("Условия оплаты для определения способа не найдены")
 
-        # 3. По умолчанию для госконтрактов
         logger.info("Используется способ оплаты по умолчанию")
         return "Безналичный расчет"
 
@@ -68,30 +58,28 @@ def parse_payment_method_paste(driver: WebDriver) -> Optional[str]:
         return None
 
 
-def parse_payment_method_html(driver: WebDriver) -> Optional[str]:
+async def parse_payment_method_html(page: Page) -> Optional[str]:
     """Извлечение способа оплаты для формата html_content"""
     logger.debug("Используется парсер для формата html_content")
 
     try:
-        # 1. Ищем прямое указание способа оплаты
-        try:
-            element = driver.find_element(By.XPATH,
-                                          "//section[.//span[@class='section__title'][contains(text(),'Способ оплаты') or contains(text(),'Форма оплаты')]]/span[@class='section__info']"
-                                          )
-            payment_method = element.text.strip()
+        # 1. Прямое указание способа
+        element = await page.query_selector(
+            "section:has(span.section__title:has-text('Способ оплаты'), span.section__title:has-text('Форма оплаты')) span.section__info"
+        )
+        if element:
+            payment_method = await element.text_content()
             logger.info(f"Найден способ оплаты: {payment_method}")
-            return payment_method
-        except:
-            logger.debug("Прямое указание способа оплаты не найдено")
+            return payment_method.strip()
 
-        # 2. Ищем в условиях оплаты
-        try:
-            element = driver.find_element(By.XPATH,
-                                          "//section[.//span[@class='section__title'][contains(text(),'Условия оплаты') or contains(text(),'Порядок оплаты')]]/span[@class='section__info']"
-                                          )
-            text = element.text.strip().lower()
+        # 2. Ищем в условиях
+        element = await page.query_selector(
+            "section:has(span.section__title:has-text('Условия оплаты'), span.section__title:has-text('Порядок оплаты')) span.section__info"
+        )
+        if element:
+            text = await element.text_content()
+            text = text.strip().lower()
 
-            # Определяем способ оплаты по ключевым словам
             if "аванс" in text:
                 return "С авансированием"
             elif "предоплат" in text:
@@ -100,12 +88,7 @@ def parse_payment_method_html(driver: WebDriver) -> Optional[str]:
                 return "По факту поставки"
             elif "безналичн" in text:
                 return "Безналичный расчет"
-            else:
-                logger.debug(f"Способ оплаты не определен из условий: {text[:100]}...")
-        except:
-            logger.debug("Условия оплаты для определения способа не найдены")
 
-        # 3. По умолчанию для госконтрактов
         logger.info("Используется способ оплаты по умолчанию")
         return "Безналичный расчет"
 

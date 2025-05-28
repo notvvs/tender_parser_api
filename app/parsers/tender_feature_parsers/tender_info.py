@@ -1,4 +1,4 @@
-from selenium.webdriver.chrome.webdriver import WebDriver
+from playwright.async_api import Page
 
 from app.parsers.tender_feature_parsers.delivery_info import get_delivery_info
 from app.parsers.tender_feature_parsers.payment_info import get_payment_info
@@ -11,23 +11,24 @@ from app.parsers.tender_feature_parsers.tender_features.tender_number import get
 from app.schemas.general import TenderInfo
 
 
-def get_tender_info(driver: WebDriver):
-    """Основная функция для получения всей информации о основных характеристиках тендера"""
-    tenderName = get_tender_name(driver)
-    tenderNumber = get_tender_number(driver)
-    customerName = get_customer_name(driver)
-    purchaseType = get_purchase_type(driver)
-    financingSource = get_financing_source(driver)
-    maxPrice = get_price_info(driver)
-    deliveryInfo = get_delivery_info(driver)
-    paymentInfo = get_payment_info(driver)
+async def get_tender_info(page: Page):
+    """Основная функция для получения информации о тендере"""
+    tenderName = await get_tender_name(page)
+    tenderNumber = await get_tender_number(page)
+    customerName = await get_customer_name(page)
+    purchaseType = await get_purchase_type(page)
+    financingSource = await get_financing_source(page)
+    maxPrice = await get_price_info(page)
+    deliveryInfo = await get_delivery_info(page)
+    paymentInfo = await get_payment_info(page)
 
-    return TenderInfo(tenderName=tenderName,
-                      tenderNumber=tenderNumber,
-                      customerName=customerName,
-                      purchaseType=purchaseType,
-                      maxPrice=maxPrice,
-                      deliveryInfo=deliveryInfo,
-                      financingSource=financingSource,
-                      paymentInfo=paymentInfo
-                      )
+    return TenderInfo(
+        tenderName=tenderName,
+        tenderNumber=tenderNumber,
+        customerName=customerName,
+        purchaseType=purchaseType,
+        maxPrice=maxPrice,
+        deliveryInfo=deliveryInfo,
+        financingSource=financingSource,
+        paymentInfo=paymentInfo
+    )

@@ -1,16 +1,15 @@
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.common.by import By
+from playwright.async_api import Page
 
 
-def get_tender_number(driver: WebDriver) -> str:
+async def get_tender_number(page: Page) -> str:
     """Извлечение номера закупки"""
     try:
-        text = driver.find_element(
-            By.XPATH,
-            "//span[@class='cardMainInfo__purchaseLink distancedText']/a"
-        ).text
-        if '№' in text:
-            return text.split('№')[-1].strip()
-        return text
+        element = await page.query_selector("span.cardMainInfo__purchaseLink.distancedText a")
+        if element:
+            text = await element.text_content()
+            if '№' in text:
+                return text.split('№')[-1].strip()
+            return text
     except:
-        return ''
+        pass
+    return ''

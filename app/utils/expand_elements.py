@@ -1,25 +1,23 @@
-import time
-
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webdriver import WebDriver
+import asyncio
 import logging
+
+from playwright.async_api import Page
 
 logger = logging.getLogger(__name__)
 
-def expand_collapse_blocks(driver: WebDriver):
-    """Раскрытие всех свернутых блоков (для формата paste)"""
+
+async def expand_collapse_blocks(page: Page):
+    """Раскрытие всех свернутых блоков"""
     try:
-        collapse_titles = driver.find_elements(By.CSS_SELECTOR,
-                                               "div.collapse__title:not(.collapse__title_opened)")
+        collapse_titles = await page.query_selector_all("div.collapse__title:not(.collapse__title_opened)")
 
         if collapse_titles:
             logger.info(f"Найдено {len(collapse_titles)} свернутых блоков")
 
         for i, title in enumerate(collapse_titles):
             try:
-                driver.execute_script("arguments[0].click();", title)
-                import time
-                time.sleep(0.5)
+                await title.click()
+                await asyncio.sleep(0.5)
                 logger.debug(f"Раскрыт блок {i + 1}/{len(collapse_titles)}")
             except Exception as e:
                 logger.warning(f"Не удалось раскрыть блок {i + 1}: {e}")
@@ -28,33 +26,20 @@ def expand_collapse_blocks(driver: WebDriver):
         logger.error(f"Ошибка при раскрытии блоков: {e}")
 
 
-def expand_all_documents(driver):
-    """Раскрывает все скрытые документы на странице"""
+async def expand_all_documents(page: Page):
+    """Раскрывает все скрытые документы"""
     try:
-        # Ищем все кнопки "Показать больше"
-        show_more_buttons = driver.find_elements(
-            By.XPATH,
-            "//a[contains(text(), 'Показать больше') or contains(text(), 'Показать все')]"
+        show_more_buttons = await page.query_selector_all(
+            "a:has-text('Показать больше'), a:has-text('Показать все')"
         )
 
         for button in show_more_buttons:
             try:
-                driver.execute_script("arguments[0].scrollIntoView(true);", button)
-                time.sleep(0.5)
-                driver.execute_script("arguments[0].click();", button)
-                time.sleep(0.5)
+                await button.scroll_into_view_if_needed()
+                await asyncio.sleep(0.5)
+                await button.click()
+                await asyncio.sleep(0.5)
             except:
                 continue
-    except:
-        pass
-
-def expand_item_info(driver, item_row):
-    """Разворачивает информацию о товаре, кликая на стрелку"""
-    try:
-        # Находим стрелку для разворачивания
-        chevron = item_row.find_element(By.CSS_SELECTOR, ".chevronRight")
-        driver.execute_script("arguments[0].click();", chevron)
-
-        driver.implicitly_wait(1)
     except:
         pass

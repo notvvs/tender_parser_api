@@ -1,14 +1,13 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webdriver import WebDriver
 import logging
+
+from playwright.async_api import Page
 
 logger = logging.getLogger(__name__)
 
-
-def is_paste_format(driver: WebDriver) -> bool:
-    """Проверка формата страницы - paste (с collapse блоками) или html_content"""
+async def is_paste_format(page: Page) -> bool:
+    """Проверка формата страницы - paste или html_content"""
     try:
-        collapse_blocks = driver.find_elements(By.CSS_SELECTOR, "div.blockInfo__collapse.collapseInfo")
+        collapse_blocks = await page.query_selector_all("div.blockInfo__collapse.collapseInfo")
         is_paste = len(collapse_blocks) > 0
         logger.debug(f"Определен формат страницы: {'paste' if is_paste else 'html_content'}")
         return is_paste
