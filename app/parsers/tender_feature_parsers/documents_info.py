@@ -44,9 +44,26 @@ async def get_tender_documents(tender_url: str) -> List[Attachment]:
             # Раскрываем скрытые документы
             await expand_all_documents(page)
 
-            # Находим все строки
-            doc_rows = await page.query_selector_all(".attachment.row")
-            logger.info(f"Найдено строк с документами: {len(doc_rows)}")
+            # Находим только блок с прикрепленными файлами (не из внешних систем)
+            attached_files_block = None
+            blocks = await page.query_selector_all(".blockFilesTabDocs")
+
+            for block in blocks:
+                # Проверяем заголовок блока
+                title_elem = await block.query_selector(".section__title")
+                if title_elem:
+                    title_text = await title_elem.text_content()
+                    if "Прикрепленные файлы" in title_text:
+                        attached_files_block = block
+                        logger.debug("Найден блок 'Прикрепленные файлы'")
+                        break
+
+            if not attached_files_block:
+                logger.warning("Блок 'Прикрепленные файлы' не найден")
+                return documents
+
+            # Находим документы только в этом блоке
+            doc_rows = await attached_files_block.query_selector_all(".attachment.row")
 
             for idx, row in enumerate(doc_rows):
                 try:
