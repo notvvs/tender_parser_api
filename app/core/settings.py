@@ -1,5 +1,7 @@
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
+load_dotenv()
 
 class Settings(BaseSettings):
     """Настройки приложения"""
@@ -13,7 +15,7 @@ class Settings(BaseSettings):
     browser_timeout: int = 30000
 
     # Ключ доступа
-    api_key: str = None
+    api_key: str = 'secret_key'
 
     # Парсер
     max_concurrent_tasks: int = 10
