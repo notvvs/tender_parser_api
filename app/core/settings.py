@@ -1,35 +1,33 @@
-from pydantic_settings import BaseSettings
+import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Загружаем .env файл
-load_dotenv()
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(env_path)
 
 
-class Settings(BaseSettings):
+class Settings:
     """Настройки приложения"""
 
     # MongoDB
-    mongodb_url: str = "mongodb://localhost:27017"
-    mongodb_db_name: str = "tenders_db"
+    mongodb_url: str = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+    mongodb_db_name: str = os.getenv("MONGODB_DB_NAME", "tenders_db")
 
     # Playwright
-    browser_headless: bool = True
+    browser_headless: bool = os.getenv("BROWSER_HEADLESS", True)
     browser_timeout: int = 30000
 
     # Парсер
-    max_concurrent_tasks: int = 10
-    parser_max_retries: int = 3
+    max_concurrent_tasks: int = os.getenv("MAX_CONCURRENT_TASKS", 10)
 
     # Очистка задач
     task_cleanup_hours: int = 24
 
     # Безопасность
-    api_key: str = "def_api_key"
+    api_key: str = os.getenv("API_KEY", "def_api_key")
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = 'utf-8'
-        case_sensitive = False
 
 
 # Создаем экземпляр настроек
