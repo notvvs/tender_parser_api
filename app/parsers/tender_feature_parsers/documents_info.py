@@ -7,17 +7,13 @@ from app.schemas.attachments import Attachment
 from app.utils.create_driver import get_page
 from app.utils.expand_elements import expand_all_documents
 from app.utils.format_check import get_file_type
+from app.utils.validator import extract_reg_number
 
 logger = logging.getLogger(__name__)
 
 def get_documents_url(tender_url: str) -> str:
     """Преобразует URL общей информации в URL документов"""
-    # Извлекаем regNumber из URL
-    match = re.search(r'regNumber=(\d+)', tender_url)
-    if not match:
-        raise ValueError(f"Не найден regNumber в URL: {tender_url}")
-
-    reg_number = match.group(1)
+    reg_number = extract_reg_number(tender_url)
     return f"https://zakupki.gov.ru/epz/order/notice/ea20/view/documents.html?regNumber={reg_number}"
 
 

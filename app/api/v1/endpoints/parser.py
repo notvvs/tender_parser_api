@@ -7,6 +7,7 @@ from app.schemas.api import (
     TaskResult
 )
 from app.services.task_manager import get_task_manager
+from app.utils.validator import validate_tender_url
 
 router = APIRouter()
 
@@ -18,6 +19,10 @@ async def create_parse_task(request: CreateTaskRequest) -> TaskResponse:
 
     - **url**: URL страницы тендера на zakupki.gov.ru
     """
+    is_valid, error_message = validate_tender_url(str(request.url))
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_message)
+
     task_manager = get_task_manager()
 
     task_id = await task_manager.create_task(
