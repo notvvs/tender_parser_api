@@ -5,6 +5,7 @@ from playwright.async_api import Page
 
 from app.utils.expand_elements import expand_collapse_blocks
 from app.utils.format_check import is_paste_format
+from app.utils.validator import clean_text
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +39,13 @@ async def parse_delivery_term_paste(page: Page) -> Optional[str]:
                         info = await section.query_selector("span.section__info")
                         if info:
                             start_text = await info.text_content()
-                            term_parts.append(f"Начало: {start_text.strip()}")
+                            term_parts.append(f"Начало: {clean_text(start_text)}")
 
                     elif title_text == "Срок исполнения контракта":
                         info = await section.query_selector("span.section__info")
                         if info:
                             end_text = await info.text_content()
-                            term_parts.append(f"Окончание: {end_text.strip()}")
+                            term_parts.append(f"Окончание: {clean_text(end_text)}")
             except:
                 continue
 
@@ -78,7 +79,7 @@ async def parse_delivery_term_html(page: Page) -> Optional[str]:
                         info = await section.query_selector("span.section__info")
                         if info:
                             start_text = await info.text_content()
-                            term_parts.append(f"Начало: {start_text.strip()}")
+                            term_parts.append(f"Начало: {clean_text(start_text)}")
 
                     elif title_text == "Срок исполнения контракта":
                         parent_text = await section.text_content()
@@ -86,7 +87,7 @@ async def parse_delivery_term_html(page: Page) -> Optional[str]:
                             info = await section.query_selector("span.section__info")
                             if info:
                                 end_text = await info.text_content()
-                                term_parts.append(f"Окончание: {end_text.strip()}")
+                                term_parts.append(f"Окончание: {clean_text(end_text)}")
             except:
                 continue
 

@@ -5,6 +5,7 @@ from playwright.async_api import Page
 
 from app.utils.expand_elements import expand_collapse_blocks
 from app.utils.format_check import is_paste_format
+from app.utils.validator import clean_text
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ async def parse_payment_term_paste(page: Page) -> Optional[str]:
                                 info = await section.query_selector("span.section__info")
                                 if info:
                                     term = await info.text_content()
-                                    result = f"В рамках срока исполнения контракта: {term.strip()}"
+                                    result = f"В рамках срока исполнения контракта: {clean_text(term)}"
                                     logger.info(f"Найден срок оплаты: {result}")
                                     return result
                     except:
@@ -91,7 +92,7 @@ async def parse_payment_term_html(page: Page) -> Optional[str]:
                                 info = await section.query_selector("span.section__info")
                                 if info:
                                     term = await info.text_content()
-                                    result = f"В рамках срока исполнения контракта: {term.strip()}"
+                                    result = f"В рамках срока исполнения контракта: {clean_text(term)}"
                                     logger.info(f"Найден срок оплаты: {result}")
                                     return result
                     except:

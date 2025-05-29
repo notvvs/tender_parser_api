@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Tuple
 from urllib.parse import urlparse, parse_qs
 
@@ -42,3 +43,22 @@ def extract_reg_number(url: str) -> Optional[str]:
         return query_params.get('regNumber', [None])[0]
     except:
         return None
+
+
+def clean_text(text: str) -> str:
+    """Очистка текста с сохранением кавычек"""
+    if not text:
+        return ""
+
+    # Заменяем спецсимволы
+    text = text.replace('\xa0', ' ')
+    text = text.replace('&nbsp;', ' ')
+    text = text.replace('\n', ' ')
+    text = text.replace('\r', ' ')
+    text = text.replace('\t', ' ')
+
+    # Убираем множественные пробелы
+    text = re.sub(r'\s+', ' ', text)
+
+    # Trim
+    return text.strip()
