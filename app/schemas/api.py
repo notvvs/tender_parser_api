@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, Field
 from typing import Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -26,13 +26,17 @@ class TaskResponse(BaseModel):
 
 
 class TaskResult(BaseModel):
+    """Результат выполнения задачи"""
     task_id: str
     status: TaskStatus
-    data: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Краткая информация о результате: tender_id, tender_number, items_count, documents_count"
+    )
+    error: Optional[str] = Field(None, description="Текст ошибки (для проваленных задач)")
     created_at: datetime
     completed_at: Optional[datetime] = None
-    processing_time: Optional[float] = None
+    processing_time: Optional[float] = Field(None, description="Время обработки в секундах")
 
 
 class HealthCheckResponse(BaseModel):

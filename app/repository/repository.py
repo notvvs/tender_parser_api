@@ -88,6 +88,9 @@ class TenderRepository(BaseRepository):
         result = await self.collection.find_one({field: value})
         return result
 
+    async def find_by_task_id(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Находит тендер по ID задачи"""
+        return await self.collection.find_one({'task_id': task_id})
 
     async def find_by_tender_number(self, tender_number: str) -> Optional[Dict[str, Any]]:
         """Находит тендер по номеру"""

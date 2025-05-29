@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Dict, Any
 
 from app.schemas.api import HealthCheckResponse
-from app.repository.database import repository
-from app.utils.create_driver import get_page
+from app.repository.database import repository, task_repository
+from app.services.task_manager import get_task_manager
 
 router = APIRouter()
 
@@ -15,10 +15,12 @@ startup_time = datetime.now()
 @router.get("/health", response_model=HealthCheckResponse)
 async def health_check() -> HealthCheckResponse:
     """Проверка здоровья сервиса"""
-    # Проверка MongoDB
+    # Проверка MongoDB для тендеров
     mongodb_status = "error"
     try:
         await repository.collection.find_one({}, {"_id": 1})
+        # Также проверяем коллекцию задач
+        await task_repository.collection.find_one({}, {"_id": 1})
         mongodb_status = "ok"
     except Exception as e:
         mongodb_status = f"error: {str(e)}"
@@ -40,10 +42,9 @@ async def health_check() -> HealthCheckResponse:
     except Exception as e:
         playwright_status = f"error: {str(e)}"
 
-    # Количество задач
-    from app.services.task_manager import get_task_manager
+    # Количество активных задач
     task_manager = get_task_manager()
-    tasks_count = len(task_manager.tasks) if task_manager else 0
+    tasks_count = await task_manager.get_active_tasks_count()
 
     # Время работы
     uptime = (datetime.now() - startup_time).total_seconds()
@@ -64,3 +65,16 @@ async def health_check() -> HealthCheckResponse:
 async def ping() -> Dict[str, str]:
     """Простая проверка доступности"""
     return {"status": "pong"}
+
+
+@router.get("/stats")
+async def get_stats() -> Dict[str, Any]:
+    """Получение статистики по задачам"""
+    task_manager = get_task_manager()
+    stats = await task_manager.get_stats()
+
+    return {
+        "tasks": stats,
+        "uptime_seconds": (datetime.now() - startup_time).total_seconds(),
+        "timestamp": datetime.now()
+    }

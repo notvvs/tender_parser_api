@@ -9,6 +9,7 @@ from app.schemas.api import (
 )
 from app.services.task_manager import get_task_manager
 from app.utils.validator import validate_tender_url
+from app.repository.database import repository, task_repository
 
 router = APIRouter()
 
@@ -50,35 +51,48 @@ async def get_task_status(task_id: str) -> TaskResponse:
     return status
 
 
-@router.get("/task/{task_id}/result", response_model=TaskResult, dependencies=[Depends(verify_api_key)])
-async def get_task_result(task_id: str) -> TaskResult:
+@router.get("/task/{task_id}/result", dependencies=[Depends(verify_api_key)])
+async def get_task_result(task_id: str) -> Dict[str, Any]:
     """
-    Получает результат выполнения задачи
+    Получает полные данные тендера по ID задачи
 
     - **task_id**: Идентификатор задачи
 
-    Возвращает полные данные о тендере, если задача выполнена успешно
+    Возвращает полный объект тендера из MongoDB со всеми позициями, документами и характеристиками
     """
-    task_manager = get_task_manager()
-    result = await task_manager.get_task_result(task_id)
+    tender = await repository.find_by_task_id(task_id)
 
-    if not result:
-        raise HTTPException(status_code=404, detail="Задача не найдена")
+    if not tender:
+        raise HTTPException(status_code=404, detail="Тендер не найден для данной задачи")
 
-    return result
+    # Преобразуем ObjectId в строку для JSON сериализации
+    if "_id" in tender:
+        tender["_id"] = str(tender["_id"])
+
+    return tender
 
 
 @router.delete("/task/{task_id}", dependencies=[Depends(verify_api_key)])
 async def delete_task(task_id: str) -> Dict[str, str]:
-    """Удаляет задачу из памяти"""
+    """
+    Удаляет задачу из активных
+
+    Примечание: Это удаляет task_id только из памяти (active_tasks).
+    Данные в MongoDB остаются для истории.
+    """
     task_manager = get_task_manager()
 
     async with task_manager.lock:
-        if task_id in task_manager.tasks:
-            del task_manager.tasks[task_id]
-            return {"message": "Задача удалена"}
+        if task_id in task_manager.active_tasks:
+            task_manager.active_tasks.discard(task_id)
+            return {"message": "Задача удалена из активных"}
         else:
-            raise HTTPException(status_code=404, detail="Задача не найдена")
+            # Проверяем, есть ли задача в БД
+            task = await task_repository.find_by_task_id(task_id)
+            if task:
+                return {"message": "Задача не активна (уже завершена или провалена)"}
+            else:
+                raise HTTPException(status_code=404, detail="Задача не найдена")
 
 
 @router.post("/cleanup", dependencies=[Depends(verify_api_key)])

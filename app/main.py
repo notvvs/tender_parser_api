@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
 
     # Инициализируем менеджер задач
     task_manager = get_task_manager()
+    await task_manager.initialize()
 
     # Запускаем периодическую очистку
     async def periodic_cleanup():
@@ -30,6 +31,9 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(3600)  # Каждый час
             try:
                 await task_manager.cleanup_old_tasks(24)
+                # Логируем статистику
+                stats = await task_manager.get_stats()
+                logger.info(f"Статистика задач: {stats}")
             except Exception as e:
                 logger.error(f"Ошибка при очистке задач: {e}")
 
@@ -93,7 +97,6 @@ async def root():
     }
 
 
-# Дополнительные эндпоинты для отладки
 @app.get("/api", tags=["root"])
 async def api_info():
     """Информация об API"""
@@ -106,7 +109,8 @@ async def api_info():
                 "ping": "/api/v1/ping",
                 "parse": "/api/v1/parser/parse",
                 "task_status": "/api/v1/parser/task/{task_id}/status",
-                "task_result": "/api/v1/parser/task/{task_id}/result"
+                "task_result": "/api/v1/parser/task/{task_id}/result",
+                "task_tender": "/api/v1/parser/task/{task_id}/tender"
             }
         }
     }
