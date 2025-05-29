@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
+
 class BaseRepository(ABC):
     """Абстрактный базовый класс репозитория"""
 
@@ -59,13 +60,14 @@ class TenderRepository(BaseRepository):
         tender_number = data["tenderInfo"]["tenderNumber"]
 
         # Проверяем существует ли тендер с таким номером
-        existing_tender = await self.collection.find_one({"tenderInfo.tenderNumber": tender_number})
+        existing_tender = await self.collection.find_one(
+            {"tenderInfo.tenderNumber": tender_number}
+        )
 
         if existing_tender:
             # Обновляем существующий тендер
             await self.collection.update_one(
-                {"tenderInfo.tenderNumber": tender_number},
-                {"$set": data}
+                {"tenderInfo.tenderNumber": tender_number}, {"$set": data}
             )
             logger.info(f"Обновлен существующий тендер: {tender_number}")
             return str(existing_tender["_id"])
@@ -90,12 +92,13 @@ class TenderRepository(BaseRepository):
 
     async def find_by_task_id(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Находит тендер по ID задачи"""
-        return await self.collection.find_one({'task_id': task_id})
+        return await self.collection.find_one({"task_id": task_id})
 
-    async def find_by_tender_number(self, tender_number: str) -> Optional[Dict[str, Any]]:
+    async def find_by_tender_number(
+        self, tender_number: str
+    ) -> Optional[Dict[str, Any]]:
         """Находит тендер по номеру"""
         return await self.find_by_field("tenderInfo.tenderNumber", tender_number)
-
 
     async def find_all(self, limit: int = 100, skip: int = 0) -> List[Dict[str, Any]]:
         """Возвращает все тендеры с пагинацией"""
@@ -108,10 +111,7 @@ class TenderRepository(BaseRepository):
     async def update(self, id: str, data: Dict[str, Any]) -> bool:
         """Обновляет тендер по ID"""
         try:
-            result = await self.collection.update_one(
-                {"_id": id},
-                {"$set": data}
-            )
+            result = await self.collection.update_one({"_id": id}, {"$set": data})
             return result.modified_count > 0
         except Exception as e:
             logger.error(f"Ошибка при обновлении: {e}")

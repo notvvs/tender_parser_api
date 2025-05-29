@@ -2,11 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Any
 
 from app.core.auth import verify_api_key
-from app.schemas.api import (
-    CreateTaskRequest,
-    TaskResponse,
-    TaskResult
-)
+from app.schemas.api import CreateTaskRequest, TaskResponse
 from app.services.task_manager import get_task_manager
 from app.utils.validator import validate_tender_url
 from app.repository.database import repository, task_repository
@@ -14,7 +10,9 @@ from app.repository.database import repository, task_repository
 router = APIRouter()
 
 
-@router.post("/parse", response_model=TaskResponse, dependencies=[Depends(verify_api_key)])
+@router.post(
+    "/parse", response_model=TaskResponse, dependencies=[Depends(verify_api_key)]
+)
 async def create_parse_task(request: CreateTaskRequest) -> TaskResponse:
     """
     Создает задачу парсинга тендера
@@ -35,7 +33,11 @@ async def create_parse_task(request: CreateTaskRequest) -> TaskResponse:
     return status
 
 
-@router.get("/task/{task_id}/status", response_model=TaskResponse, dependencies=[Depends(verify_api_key)])
+@router.get(
+    "/task/{task_id}/status",
+    response_model=TaskResponse,
+    dependencies=[Depends(verify_api_key)],
+)
 async def get_task_status(task_id: str) -> TaskResponse:
     """
     Получает статус задачи по ID
@@ -63,7 +65,9 @@ async def get_task_result(task_id: str) -> Dict[str, Any]:
     tender = await repository.find_by_task_id(task_id)
 
     if not tender:
-        raise HTTPException(status_code=404, detail="Тендер не найден для данной задачи")
+        raise HTTPException(
+            status_code=404, detail="Тендер не найден для данной задачи"
+        )
 
     # Преобразуем ObjectId в строку для JSON сериализации
     if "_id" in tender:

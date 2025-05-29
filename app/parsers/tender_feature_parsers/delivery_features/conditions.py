@@ -9,6 +9,7 @@ from app.utils.format_check import is_paste_format
 
 logger = logging.getLogger(__name__)
 
+
 async def get_delivery_conditions(page: Page) -> Optional[str]:
     """Главная функция для извлечения условий доставки"""
     logger.info("Начало извлечения условий доставки")
@@ -27,7 +28,9 @@ async def parse_delivery_conditions_paste(page: Page) -> Optional[str]:
     await expand_collapse_blocks(page)
 
     try:
-        sections = await page.query_selector_all("div.collapse__content section.blockInfo__section")
+        sections = await page.query_selector_all(
+            "div.collapse__content section.blockInfo__section"
+        )
 
         # 1. Проверяем информацию о сроке исполнения
         for section in sections:
@@ -36,7 +39,9 @@ async def parse_delivery_conditions_paste(page: Page) -> Optional[str]:
                 for info in info_spans:
                     text = await info.text_content()
                     if "включает в том числе приемку" in text:
-                        conditions.append("Срок исполнения включает приемку и оплату товара")
+                        conditions.append(
+                            "Срок исполнения включает приемку и оплату товара"
+                        )
                         break
             except:
                 continue
@@ -47,13 +52,17 @@ async def parse_delivery_conditions_paste(page: Page) -> Optional[str]:
                 title = await section.query_selector("span.section__title")
                 if title:
                     title_text = await title.text_content()
-                    if "односторонн" in title_text.lower() and "отказ" in title_text.lower():
+                    if (
+                        "односторонн" in title_text.lower()
+                        and "отказ" in title_text.lower()
+                    ):
                         info = await section.query_selector("span.section__info")
                         if info:
                             info_text = await info.text_content()
                             if "да" in info_text.lower():
                                 conditions.append(
-                                    "Предусмотрена возможность одностороннего отказа от исполнения контракта")
+                                    "Предусмотрена возможность одностороннего отказа от исполнения контракта"
+                                )
                                 break
             except:
                 continue
@@ -72,19 +81,36 @@ async def parse_delivery_conditions_paste(page: Page) -> Optional[str]:
                                 # Ищем размер обеспечения
                                 for j in range(i + 1, min(i + 3, len(sections))):
                                     try:
-                                        next_title = await sections[j].query_selector("span.section__title")
+                                        next_title = await sections[j].query_selector(
+                                            "span.section__title"
+                                        )
                                         if next_title:
-                                            next_title_text = await next_title.text_content()
-                                            if "Размер обеспечения исполнения контракта" in next_title_text:
-                                                size_info = await sections[j].query_selector("span.section__info")
+                                            next_title_text = (
+                                                await next_title.text_content()
+                                            )
+                                            if (
+                                                "Размер обеспечения исполнения контракта"
+                                                in next_title_text
+                                            ):
+                                                size_info = await sections[
+                                                    j
+                                                ].query_selector("span.section__info")
                                                 if size_info:
-                                                    size_text = await size_info.text_content()
-                                                    percent_match = re.search(r'(\d+(?:[,.]\d+)?)\s*%', size_text)
+                                                    size_text = (
+                                                        await size_info.text_content()
+                                                    )
+                                                    percent_match = re.search(
+                                                        r"(\d+(?:[,.]\d+)?)\s*%",
+                                                        size_text,
+                                                    )
                                                     if percent_match:
                                                         conditions.append(
-                                                            f"Требуется обеспечение исполнения контракта: {percent_match.group(1)} %")
+                                                            f"Требуется обеспечение исполнения контракта: {percent_match.group(1)} %"
+                                                        )
                                                     else:
-                                                        conditions.append("Требуется обеспечение исполнения контракта")
+                                                        conditions.append(
+                                                            "Требуется обеспечение исполнения контракта"
+                                                        )
                                                     break
                                     except:
                                         continue
@@ -119,7 +145,9 @@ async def parse_delivery_conditions_html(page: Page) -> Optional[str]:
                 for info in info_spans:
                     text = await info.text_content()
                     if "включает в том числе приемку" in text:
-                        conditions.append("Срок исполнения включает приемку и оплату товара")
+                        conditions.append(
+                            "Срок исполнения включает приемку и оплату товара"
+                        )
                         break
             except:
                 continue
@@ -130,13 +158,17 @@ async def parse_delivery_conditions_html(page: Page) -> Optional[str]:
                 title = await section.query_selector("span.section__title")
                 if title:
                     title_text = await title.text_content()
-                    if "односторонн" in title_text.lower() and "отказ" in title_text.lower():
+                    if (
+                        "односторонн" in title_text.lower()
+                        and "отказ" in title_text.lower()
+                    ):
                         info = await section.query_selector("span.section__info")
                         if info:
                             info_text = await info.text_content()
                             if "да" in info_text.lower():
                                 conditions.append(
-                                    "Предусмотрена возможность одностороннего отказа от исполнения контракта")
+                                    "Предусмотрена возможность одностороннего отказа от исполнения контракта"
+                                )
             except:
                 continue
 
@@ -155,19 +187,36 @@ async def parse_delivery_conditions_html(page: Page) -> Optional[str]:
                                 # Ищем размер
                                 for j in range(i + 1, min(i + 3, len(all_sections))):
                                     try:
-                                        next_title = await all_sections[j].query_selector("span.section__title")
+                                        next_title = await all_sections[
+                                            j
+                                        ].query_selector("span.section__title")
                                         if next_title:
-                                            next_title_text = await next_title.text_content()
-                                            if "Размер обеспечения исполнения контракта" in next_title_text:
-                                                size_info = await all_sections[j].query_selector("span.section__info")
+                                            next_title_text = (
+                                                await next_title.text_content()
+                                            )
+                                            if (
+                                                "Размер обеспечения исполнения контракта"
+                                                in next_title_text
+                                            ):
+                                                size_info = await all_sections[
+                                                    j
+                                                ].query_selector("span.section__info")
                                                 if size_info:
-                                                    size_text = await size_info.text_content()
-                                                    percent_match = re.search(r'(\d+(?:[,.]\d+)?)\s*%', size_text)
+                                                    size_text = (
+                                                        await size_info.text_content()
+                                                    )
+                                                    percent_match = re.search(
+                                                        r"(\d+(?:[,.]\d+)?)\s*%",
+                                                        size_text,
+                                                    )
                                                     if percent_match:
                                                         conditions.append(
-                                                            f"Требуется обеспечение исполнения контракта: {percent_match.group(1)} %")
+                                                            f"Требуется обеспечение исполнения контракта: {percent_match.group(1)} %"
+                                                        )
                                                     else:
-                                                        conditions.append("Требуется обеспечение исполнения контракта")
+                                                        conditions.append(
+                                                            "Требуется обеспечение исполнения контракта"
+                                                        )
                                                     break
                                     except:
                                         continue

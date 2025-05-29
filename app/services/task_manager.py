@@ -13,10 +13,10 @@ from app.repository.database import repository, task_repository
 logger = logging.getLogger(__name__)
 
 # Глобальный экземпляр
-_task_manager_instance: Optional['TaskManager'] = None
+_task_manager_instance: Optional["TaskManager"] = None
 
 
-def get_task_manager() -> 'TaskManager':
+def get_task_manager() -> "TaskManager":
     """Получить экземпляр менеджера задач (Singleton)"""
     global _task_manager_instance
     if _task_manager_instance is None:
@@ -53,7 +53,9 @@ class TaskManager:
                         logger.info(f"Перезапущена обработка задачи {task['task_id']}")
 
             self._initialized = True
-            logger.info(f"TaskManager инициализирован. Активных задач: {len(self.active_tasks)}")
+            logger.info(
+                f"TaskManager инициализирован. Активных задач: {len(self.active_tasks)}"
+            )
 
         except Exception as e:
             logger.error(f"Ошибка при инициализации TaskManager: {e}")
@@ -73,7 +75,7 @@ class TaskManager:
             "metadata": metadata,
             "result": None,
             "error": None,
-            "processing_time": None
+            "processing_time": None,
         }
 
         await task_repository.create_task(task_data)
@@ -113,9 +115,9 @@ class TaskManager:
                 tender_dict = tender_data.model_dump()
 
                 # Добавляем task_id и другие метаданные
-                tender_dict['task_id'] = task_id
-                tender_dict['parsed_at'] = datetime.now()
-                tender_dict['source_url'] = url
+                tender_dict["task_id"] = task_id
+                tender_dict["parsed_at"] = datetime.now()
+                tender_dict["source_url"] = url
 
                 # Сохранение тендера в БД
                 tender_id = await repository.save(tender_dict)
@@ -125,18 +127,22 @@ class TaskManager:
                     "tender_id": tender_id,
                     "tender_number": tender_data.tenderInfo.tenderNumber,
                     "items_count": len(tender_data.items),
-                    "documents_count": len(tender_data.attachments)
+                    "documents_count": len(tender_data.attachments),
                 }
 
                 # Обновляем задачу в БД
                 processing_time = (datetime.now() - start_time).total_seconds()
                 await task_repository.complete_task(task_id, result, processing_time)
 
-                logger.info(f"Задача {task_id} успешно завершена за {processing_time:.2f} сек")
+                logger.info(
+                    f"Задача {task_id} успешно завершена за {processing_time:.2f} сек"
+                )
 
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"Ошибка в задаче {task_id}: {error_msg}\n{traceback.format_exc()}")
+            logger.error(
+                f"Ошибка в задаче {task_id}: {error_msg}\n{traceback.format_exc()}"
+            )
 
             # Обновляем статус в БД
             processing_time = (datetime.now() - start_time).total_seconds()
@@ -161,7 +167,7 @@ class TaskManager:
             updated_at=task["updated_at"],
             url=task["url"],
             error=task.get("error"),
-            result_available=task["status"] == TaskStatus.COMPLETED.value
+            result_available=task["status"] == TaskStatus.COMPLETED.value,
         )
 
     async def get_task_result(self, task_id: str) -> Optional[TaskResult]:
@@ -178,7 +184,7 @@ class TaskManager:
             error=task.get("error"),
             created_at=task["created_at"],
             completed_at=task.get("completed_at"),
-            processing_time=task.get("processing_time")
+            processing_time=task.get("processing_time"),
         )
 
     async def cleanup_old_tasks(self, hours: int = 24):

@@ -9,6 +9,7 @@ from app.utils.validator import clean_text
 
 logger = logging.getLogger(__name__)
 
+
 async def get_payment_term(page: Page) -> Optional[str]:
     """Главная функция для извлечения срока оплаты"""
     logger.info("Начало извлечения срока оплаты")
@@ -35,18 +36,24 @@ async def parse_payment_term_paste(page: Page) -> Optional[str]:
             return payment_term
 
         # 2. Проверяем упоминание в сроке исполнения
-        elements = await page.query_selector_all("div.collapse__content span.section__info")
+        elements = await page.query_selector_all(
+            "div.collapse__content span.section__info"
+        )
         for element in elements:
             text = await element.text_content()
             if "включает в том числе приемку" in text and "оплату" in text:
-                sections = await page.query_selector_all("div.collapse__content section.blockInfo__section")
+                sections = await page.query_selector_all(
+                    "div.collapse__content section.blockInfo__section"
+                )
                 for section in sections:
                     try:
                         title = await section.query_selector("span.section__title")
                         if title:
                             title_text = await title.text_content()
                             if title_text.strip() == "Срок исполнения контракта":
-                                info = await section.query_selector("span.section__info")
+                                info = await section.query_selector(
+                                    "span.section__info"
+                                )
                                 if info:
                                     term = await info.text_content()
                                     result = f"В рамках срока исполнения контракта: {clean_text(term)}"
@@ -89,7 +96,9 @@ async def parse_payment_term_html(page: Page) -> Optional[str]:
                         if title:
                             title_text = await title.text_content()
                             if title_text.strip() == "Срок исполнения контракта":
-                                info = await section.query_selector("span.section__info")
+                                info = await section.query_selector(
+                                    "span.section__info"
+                                )
                                 if info:
                                     term = await info.text_content()
                                     result = f"В рамках срока исполнения контракта: {clean_text(term)}"

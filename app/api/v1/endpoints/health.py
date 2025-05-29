@@ -33,8 +33,7 @@ async def health_check() -> HealthCheckResponse:
         async with async_playwright() as p:
             # Просто пробуем запустить браузер
             browser = await p.chromium.launch(
-                headless=True,
-                args=['--no-sandbox', '--disable-setuid-sandbox']
+                headless=True, args=["--no-sandbox", "--disable-setuid-sandbox"]
             )
             await browser.close()
             playwright_status = "ok"
@@ -57,7 +56,7 @@ async def health_check() -> HealthCheckResponse:
         mongodb=mongodb_status,
         playwright=playwright_status,
         tasks_in_memory=tasks_count,
-        uptime_seconds=uptime
+        uptime_seconds=uptime,
     )
 
 
@@ -76,5 +75,5 @@ async def get_stats() -> Dict[str, Any]:
     return {
         "tasks": stats,
         "uptime_seconds": (datetime.now() - startup_time).total_seconds(),
-        "timestamp": datetime.now()
+        "timestamp": datetime.now(),
     }

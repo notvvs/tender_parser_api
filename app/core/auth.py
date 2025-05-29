@@ -11,14 +11,13 @@ def verify_api_key(x_api_key: str = Header(None)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="API ключ не предоставлен",
-            headers={"WWW-Authenticate": "ApiKey"}
+            headers={"WWW-Authenticate": "ApiKey"},
         )
 
     # Проверяем правильность ключа
     if x_api_key != settings.api_key:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Неверный API ключ"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Неверный API ключ"
         )
 
     return x_api_key

@@ -8,6 +8,7 @@ from app.utils.format_check import is_paste_format
 
 logger = logging.getLogger(__name__)
 
+
 async def get_payment_method(page: Page) -> Optional[str]:
     """Главная функция для извлечения способа оплаты"""
     logger.info("Начало извлечения способа оплаты")

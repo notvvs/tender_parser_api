@@ -9,7 +9,9 @@ logger = logging.getLogger(__name__)
 async def expand_collapse_blocks(page: Page):
     """Раскрытие всех свернутых блоков"""
     try:
-        collapse_titles = await page.query_selector_all("div.collapse__title:not(.collapse__title_opened)")
+        collapse_titles = await page.query_selector_all(
+            "div.collapse__title:not(.collapse__title_opened)"
+        )
 
         if collapse_titles:
             logger.info(f"Найдено {len(collapse_titles)} свернутых блоков")

@@ -22,12 +22,12 @@ def validate_tender_url(url: str) -> Tuple[bool, Optional[str]]:
         return False, "Некорректный формат URL"
 
     # Проверяем домен
-    if 'zakupki.gov.ru' not in parsed.netloc:
-        return False, f"URL должен быть с сайта zakupki.gov.ru"
+    if "zakupki.gov.ru" not in parsed.netloc:
+        return False, "URL должен быть с сайта zakupki.gov.ru"
 
     # Проверяем наличие regNumber в параметрах
     query_params = parse_qs(parsed.query)
-    reg_number = query_params.get('regNumber', [None])[0]
+    reg_number = query_params.get("regNumber", [None])[0]
 
     if not reg_number:
         return False, "В URL отсутствует параметр regNumber"
@@ -40,7 +40,7 @@ def extract_reg_number(url: str) -> Optional[str]:
     try:
         parsed = urlparse(url)
         query_params = parse_qs(parsed.query)
-        return query_params.get('regNumber', [None])[0]
+        return query_params.get("regNumber", [None])[0]
     except:
         return None
 
@@ -51,14 +51,14 @@ def clean_text(text: str) -> str:
         return ""
 
     # Заменяем спецсимволы
-    text = text.replace('\xa0', ' ')
-    text = text.replace('&nbsp;', ' ')
-    text = text.replace('\n', ' ')
-    text = text.replace('\r', ' ')
-    text = text.replace('\t', ' ')
+    text = text.replace("\xa0", " ")
+    text = text.replace("&nbsp;", " ")
+    text = text.replace("\n", " ")
+    text = text.replace("\r", " ")
+    text = text.replace("\t", " ")
 
     # Убираем множественные пробелы
-    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r"\s+", " ", text)
 
     # Trim
     return text.strip()

@@ -33,7 +33,7 @@ async def parse_general_requirements_paste(page: Page) -> GeneralRequirements:
         markingRequirements=None,
         warrantyRequirements=warranty_requirements,
         safetyRequirements=None,
-        regulatoryRequirements=None
+        regulatoryRequirements=None,
     )
 
 
@@ -49,7 +49,7 @@ async def parse_general_requirements_html(page: Page) -> GeneralRequirements:
         markingRequirements=None,
         warrantyRequirements=warranty_requirements,
         safetyRequirements=None,
-        regulatoryRequirements=None
+        regulatoryRequirements=None,
     )
 
 
@@ -119,9 +119,13 @@ async def parse_warranty_requirements_html(page: Page) -> Optional[str]:
     """Извлечение гарантийных требований для формата html_content"""
     try:
         # Проверяем, есть ли блок с гарантийными требованиями
-        warranty_block = await page.query_selector("h2:has-text('Требования к гарантии качества товара')")
+        warranty_block = await page.query_selector(
+            "h2:has-text('Требования к гарантии качества товара')"
+        )
         if not warranty_block:
-            logger.debug("Блок с гарантийными требованиями не найден в формате html_content")
+            logger.debug(
+                "Блок с гарантийными требованиями не найден в формате html_content"
+            )
             return None
 
         warranty_info = []

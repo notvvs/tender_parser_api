@@ -9,8 +9,7 @@ from app.services.task_manager import get_task_manager
 
 # Настройка логирования
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Настройка CORS
@@ -88,12 +87,9 @@ async def root():
         "api": {
             "v1": {
                 "base": "/api/v1",
-                "endpoints": {
-                    "health": "/api/v1/health",
-                    "parser": "/api/v1/parser"
-                }
+                "endpoints": {"health": "/api/v1/health", "parser": "/api/v1/parser"},
             }
-        }
+        },
     }
 
 
@@ -110,9 +106,9 @@ async def api_info():
                 "parse": "/api/v1/parser/parse",
                 "task_status": "/api/v1/parser/task/{task_id}/status",
                 "task_result": "/api/v1/parser/task/{task_id}/result",
-                "task_tender": "/api/v1/parser/task/{task_id}/tender"
+                "task_tender": "/api/v1/parser/task/{task_id}/tender",
             }
-        }
+        },
     }
 
 
@@ -120,9 +116,5 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
+        "app.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
     )

@@ -9,6 +9,7 @@ from app.utils.validator import clean_text
 
 logger = logging.getLogger(__name__)
 
+
 async def get_delivery_term(page: Page) -> Optional[str]:
     """Главная функция для извлечения срока доставки"""
     logger.info("Начало извлечения срока доставки")
@@ -26,7 +27,9 @@ async def parse_delivery_term_paste(page: Page) -> Optional[str]:
 
     try:
         term_parts = []
-        sections = await page.query_selector_all("div.collapse__content section.blockInfo__section")
+        sections = await page.query_selector_all(
+            "div.collapse__content section.blockInfo__section"
+        )
 
         for section in sections:
             try:

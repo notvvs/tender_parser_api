@@ -9,10 +9,10 @@ from app.schemas.requirements import GeneralRequirements
 
 class TenderData(BaseModel):
     """Полные данные о тендере"""
+
     tenderInfo: TenderInfo = Field(..., description="Основная информация")
     items: List[Item] = Field(default_factory=list, description="Позиции закупки")
     generalRequirements: Optional[GeneralRequirements] = Field(
-        default_factory=GeneralRequirements,
-        description="Общие требования"
+        default_factory=GeneralRequirements, description="Общие требования"
     )
     attachments: List[Attachment] = Field(default_factory=list, description="Документы")

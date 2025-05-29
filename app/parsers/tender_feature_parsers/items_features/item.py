@@ -5,13 +5,19 @@ from typing import Optional
 
 from playwright.async_api import Page
 
-from app.parsers.tender_feature_parsers.items_features.characteristics import parse_characteristics_from_table
-from app.parsers.tender_feature_parsers.items_features.codes import extract_ktru_code, extract_okpd2_code
+from app.parsers.tender_feature_parsers.items_features.characteristics import (
+    parse_characteristics_from_table,
+)
+from app.parsers.tender_feature_parsers.items_features.codes import (
+    extract_ktru_code,
+    extract_okpd2_code,
+)
 from app.parsers.tender_feature_parsers.items_features.price import parse_price
 from app.parsers.tender_feature_parsers.items_features.quantity import parse_quantity
 from app.schemas.items import Item
 
 logger = logging.getLogger(__name__)
+
 
 async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
     """Парсит товар из строки таблицы"""
@@ -32,7 +38,7 @@ async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
         ktru_code = extract_ktru_code(code_cell)
 
         # Название товара
-        name_lines = cell_texts[2].strip().split('\n')
+        name_lines = cell_texts[2].strip().split("\n")
         name = name_lines[0].strip()
 
         # Единица измерения
@@ -64,20 +70,30 @@ async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
                         await asyncio.sleep(1)
 
                         # Находим таблицу с характеристиками
-                        info_rows = await page.query_selector_all(f"tr.truInfo_{info_id}")
+                        info_rows = await page.query_selector_all(
+                            f"tr.truInfo_{info_id}"
+                        )
 
                         for info_row in info_rows:
-                            tables = await info_row.query_selector_all("table.tableBlock")
+                            tables = await info_row.query_selector_all(
+                                "table.tableBlock"
+                            )
                             for table in tables:
                                 try:
-                                    header = await table.query_selector("td:has-text('Наименование характеристики')")
+                                    header = await table.query_selector(
+                                        "td:has-text('Наименование характеристики')"
+                                    )
                                     if header:
-                                        characteristics = await parse_characteristics_from_table(table)
+                                        characteristics = (
+                                            await parse_characteristics_from_table(
+                                                table
+                                            )
+                                        )
                                         break
                                 except:
                                     continue
         except Exception as e:
-            logger.error(f'Ошибка при получении характеристик: {e}')
+            logger.error(f"Ошибка при получении характеристик: {e}")
 
         return Item(
             id=item_id,
@@ -89,7 +105,7 @@ async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
             unitPrice=unit_price,
             totalPrice=total_price,
             characteristics=characteristics,
-            additionalRequirements=additional_requirements
+            additionalRequirements=additional_requirements,
         )
 
     except Exception as e:

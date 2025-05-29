@@ -9,6 +9,7 @@ from app.utils.expand_elements import expand_collapse_blocks
 
 logger = logging.getLogger(__name__)
 
+
 async def get_delivery_address(page: Page) -> Optional[str]:
     """Главная функция для извлечения адреса доставки"""
     logger.info("Начало извлечения адреса доставки")
@@ -40,7 +41,7 @@ async def parse_delivery_address_paste(page: Page) -> Optional[str]:
                         info = await section.query_selector("span.section__info")
                         if info:
                             address = await info.text_content()
-                            address = re.sub(r'\s+', ' ', address.strip())
+                            address = re.sub(r"\s+", " ", address.strip())
                             logger.info(f"Найден адрес доставки: {address[:50]}...")
                             return address
             except Exception as e:
@@ -72,7 +73,7 @@ async def parse_delivery_address_html(page: Page) -> Optional[str]:
                         info = await section.query_selector("span.section__info")
                         if info:
                             address = await info.text_content()
-                            address = re.sub(r'\s+', ' ', address.strip())
+                            address = re.sub(r"\s+", " ", address.strip())
                             logger.info(f"Найден адрес доставки: {address[:50]}...")
                             return address
             except Exception as e:

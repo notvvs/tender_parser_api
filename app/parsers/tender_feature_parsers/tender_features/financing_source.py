@@ -8,6 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 async def get_financing_source(page: Page) -> Optional[str]:
     """Главная функция для извлечения источника финансирования"""
     logger.info("Начало извлечения источника финансирования")

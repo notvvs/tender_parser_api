@@ -1,7 +1,11 @@
 from playwright.async_api import Page
 
-from app.parsers.tender_feature_parsers.payment_features.conditions import get_payment_conditions
-from app.parsers.tender_feature_parsers.payment_features.method import get_payment_method
+from app.parsers.tender_feature_parsers.payment_features.conditions import (
+    get_payment_conditions,
+)
+from app.parsers.tender_feature_parsers.payment_features.method import (
+    get_payment_method,
+)
 from app.parsers.tender_feature_parsers.payment_features.term import get_payment_term
 from app.schemas.general import PaymentInfo
 
@@ -15,5 +19,5 @@ async def get_payment_info(page: Page):
     return PaymentInfo(
         paymentTerm=paymentTerm,
         paymentMethod=paymentMethod,
-        paymentConditions=paymentConditions
+        paymentConditions=paymentConditions,
     )

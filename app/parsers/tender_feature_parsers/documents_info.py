@@ -11,6 +11,7 @@ from app.utils.validator import extract_reg_number
 
 logger = logging.getLogger(__name__)
 
+
 def get_documents_url(tender_url: str) -> str:
     """Преобразует URL общей информации в URL документов"""
     reg_number = extract_reg_number(tender_url)
@@ -68,7 +69,7 @@ async def get_tender_documents(tender_url: str) -> List[Attachment]:
                     if not link:
                         continue
 
-                    url = await link.get_attribute('href')
+                    url = await link.get_attribute("href")
                     if not url:
                         logger.warning(f"Пустой URL для документа #{idx + 1}")
                         continue
@@ -76,27 +77,24 @@ async def get_tender_documents(tender_url: str) -> List[Attachment]:
                     # Получаем название
                     name = await link.text_content()
                     if not name:
-                        title = await link.get_attribute('title')
+                        title = await link.get_attribute("title")
                         if title:
-                            name = re.sub(r'\.\w+$', '', title)
+                            name = re.sub(r"\.\w+$", "", title)
                         else:
                             name = f"Документ #{idx + 1}"
 
                     # Определяем тип
-                    file_type = 'document'
+                    file_type = "document"
                     try:
                         icon = await row.query_selector("img[src*='/icons/type/']")
                         if icon:
-                            icon_src = await icon.get_attribute('src')
+                            icon_src = await icon.get_attribute("src")
                             file_type = get_file_type(icon_src)
                     except:
                         pass
 
                     doc = Attachment(
-                        name=name.strip(),
-                        type=file_type,
-                        url=url,
-                        description=None
+                        name=name.strip(), type=file_type, url=url, description=None
                     )
                     documents.append(doc)
                     logger.debug(f"Документ #{idx + 1} обработан: {name}")
@@ -105,7 +103,7 @@ async def get_tender_documents(tender_url: str) -> List[Attachment]:
                     logger.error(f"Ошибка при парсинге документа #{idx + 1}: {e}")
 
     except Exception as e:
-        logger.error(f'Критическая ошибка при парсинге документов: {e}', exc_info=True)
+        logger.error(f"Критическая ошибка при парсинге документов: {e}", exc_info=True)
 
     logger.info(f"Парсинг документов завершен. Найдено: {len(documents)}")
     return documents

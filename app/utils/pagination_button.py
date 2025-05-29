@@ -5,10 +5,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 async def go_to_next_page(page: Page) -> bool:
     """Переходит на следующую страницу"""
     try:
-        paginator = await page.query_selector("div[id*='truPagingContainer'] .paginator")
+        paginator = await page.query_selector(
+            "div[id*='truPagingContainer'] .paginator"
+        )
         if not paginator:
             return False
 

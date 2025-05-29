@@ -9,6 +9,7 @@ from app.utils.pagination_button import go_to_next_page
 
 logger = logging.getLogger(__name__)
 
+
 async def get_tender_items(page: Page) -> List[Item]:
     """Основная функция для парсинга товаров тендера"""
     items = []
@@ -23,7 +24,9 @@ async def get_tender_items(page: Page) -> List[Item]:
             logger.info(f"Парсинг страницы {page_num}...")
 
             table = await page.query_selector("#positionKTRU table.tableBlock")
-            item_rows = await table.query_selector_all("tbody.tableBlock__body > tr.tableBlock__row")
+            item_rows = await table.query_selector_all(
+                "tbody.tableBlock__body > tr.tableBlock__row"
+            )
 
             for row in item_rows:
                 class_name = await row.get_attribute("class")

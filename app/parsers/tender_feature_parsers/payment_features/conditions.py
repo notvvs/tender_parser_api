@@ -9,6 +9,7 @@ from app.utils.format_check import is_paste_format
 
 logger = logging.getLogger(__name__)
 
+
 async def get_payment_conditions(page: Page) -> Optional[str]:
     """Главная функция для извлечения платежных реквизитов"""
     logger.info("Начало извлечения платежных реквизитов")
@@ -49,7 +50,7 @@ async def parse_payment_conditions_paste(page: Page) -> Optional[str]:
         )
         if element:
             requisites = await element.text_content()
-            requisites = re.sub(r'\s+', ' ', requisites.strip())
+            requisites = re.sub(r"\s+", " ", requisites.strip())
             logger.info(f"Найдены реквизиты для обеспечения: {requisites[:50]}...")
             return requisites
 
@@ -90,7 +91,7 @@ async def parse_payment_conditions_html(page: Page) -> Optional[str]:
         )
         if element:
             requisites = await element.text_content()
-            requisites = re.sub(r'\s+', ' ', requisites.strip())
+            requisites = re.sub(r"\s+", " ", requisites.strip())
             logger.info(f"Найдены реквизиты для обеспечения: {requisites[:50]}...")
             return requisites
 

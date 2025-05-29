@@ -23,12 +23,11 @@ class TaskRepository:
         logger.info(f"Создана задача в БД: {task_data['task_id']}")
         return str(result.inserted_id)
 
-    async def update_task_status(self, task_id: str, status: TaskStatus, error: Optional[str] = None):
+    async def update_task_status(
+        self, task_id: str, status: TaskStatus, error: Optional[str] = None
+    ):
         """Обновляет статус задачи"""
-        update_data = {
-            "status": status.value,
-            "updated_at": datetime.now()
-        }
+        update_data = {"status": status.value, "updated_at": datetime.now()}
 
         if error:
             update_data["error"] = error
@@ -39,8 +38,7 @@ class TaskRepository:
             update_data["completed_at"] = datetime.now()
 
         result = await self.collection.update_one(
-            {"task_id": task_id},
-            {"$set": update_data}
+            {"task_id": task_id}, {"$set": update_data}
         )
 
         if result.modified_count > 0:
@@ -48,20 +46,19 @@ class TaskRepository:
         else:
             logger.warning(f"Задача {task_id} не найдена для обновления статуса")
 
-    async def complete_task(self, task_id: str, result: Dict[str, Any], processing_time: float):
+    async def complete_task(
+        self, task_id: str, result: Dict[str, Any], processing_time: float
+    ):
         """Завершает задачу с результатом"""
         update_data = {
             "status": TaskStatus.COMPLETED.value,
             "result": result,
             "completed_at": datetime.now(),
             "updated_at": datetime.now(),
-            "processing_time": processing_time
+            "processing_time": processing_time,
         }
 
-        await self.collection.update_one(
-            {"task_id": task_id},
-            {"$set": update_data}
-        )
+        await self.collection.update_one({"task_id": task_id}, {"$set": update_data})
         logger.info(f"Задача {task_id} успешно завершена")
 
     async def fail_task(self, task_id: str, error: str, processing_time: float):
@@ -71,13 +68,10 @@ class TaskRepository:
             "error": error,
             "completed_at": datetime.now(),
             "updated_at": datetime.now(),
-            "processing_time": processing_time
+            "processing_time": processing_time,
         }
 
-        await self.collection.update_one(
-            {"task_id": task_id},
-            {"$set": update_data}
-        )
+        await self.collection.update_one({"task_id": task_id}, {"$set": update_data})
         logger.error(f"Задача {task_id} завершилась с ошибкой: {error}")
 
     async def find_by_task_id(self, task_id: str) -> Optional[Dict[str, Any]]:
@@ -87,9 +81,9 @@ class TaskRepository:
 
     async def find_active_tasks(self) -> List[Dict[str, Any]]:
         """Находит все активные задачи (pending или processing)"""
-        cursor = self.collection.find({
-            "status": {"$in": [TaskStatus.PENDING.value, TaskStatus.PROCESSING.value]}
-        })
+        cursor = self.collection.find(
+            {"status": {"$in": [TaskStatus.PENDING.value, TaskStatus.PROCESSING.value]}}
+        )
 
         results = []
         async for document in cursor:
@@ -102,10 +96,14 @@ class TaskRepository:
 
         cutoff_date = datetime.now() - timedelta(hours=hours)
 
-        result = await self.collection.delete_many({
-            "status": {"$in": [TaskStatus.COMPLETED.value, TaskStatus.FAILED.value]},
-            "completed_at": {"$lt": cutoff_date}
-        })
+        result = await self.collection.delete_many(
+            {
+                "status": {
+                    "$in": [TaskStatus.COMPLETED.value, TaskStatus.FAILED.value]
+                },
+                "completed_at": {"$lt": cutoff_date},
+            }
+        )
 
         if result.deleted_count > 0:
             logger.info(f"Удалено {result.deleted_count} старых задач")
@@ -114,14 +112,7 @@ class TaskRepository:
 
     async def get_task_stats(self) -> Dict[str, int]:
         """Получает статистику по задачам"""
-        pipeline = [
-            {
-                "$group": {
-                    "_id": "$status",
-                    "count": {"$sum": 1}
-                }
-            }
-        ]
+        pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}}}]
 
         stats = {}
         async for doc in self.collection.aggregate(pipeline):

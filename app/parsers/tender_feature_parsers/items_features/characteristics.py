@@ -6,11 +6,13 @@ from app.schemas.items import ItemCharacteristic
 
 logger = logging.getLogger(__name__)
 
+
 def parse_characteristic_type(instruction_text: str) -> str:
     """Определяет тип характеристики по инструкции"""
     if "конкретное значение" in instruction_text.lower():
         return "Количественная"
     return "Качественная"
+
 
 def parse_characteristic_changeable(instruction_text: str) -> bool:
     """Определяет, может ли характеристика изменяться участником"""
@@ -19,6 +21,7 @@ def parse_characteristic_changeable(instruction_text: str) -> bool:
     elif "указывает в заявке" in instruction_text.lower():
         return True
     return False
+
 
 async def parse_characteristics_from_table(table_element) -> List[ItemCharacteristic]:
     """Парсит характеристики из таблицы"""
@@ -57,7 +60,9 @@ async def parse_characteristics_from_table(table_element) -> List[ItemCharacteri
                 if current_name and current_values:
                     combined_value = ", ".join(current_values)
                     char_type = parse_characteristic_type(current_instruction or "")
-                    changeable = parse_characteristic_changeable(current_instruction or "")
+                    changeable = parse_characteristic_changeable(
+                        current_instruction or ""
+                    )
 
                     characteristic = ItemCharacteristic(
                         id=char_id,
@@ -67,7 +72,7 @@ async def parse_characteristics_from_table(table_element) -> List[ItemCharacteri
                         type=char_type,
                         required=True,
                         changeable=changeable,
-                        fillInstruction=current_instruction
+                        fillInstruction=current_instruction,
                     )
                     characteristics.append(characteristic)
                     char_id += 1
@@ -88,7 +93,9 @@ async def parse_characteristics_from_table(table_element) -> List[ItemCharacteri
 
                     if len(cells) > 3:
                         instruction_cell = cells[3]
-                        instruction_rowspan = await instruction_cell.get_attribute("rowspan")
+                        instruction_rowspan = await instruction_cell.get_attribute(
+                            "rowspan"
+                        )
                         if instruction_rowspan:
                             current_instruction = await instruction_cell.text_content()
                             current_instruction = current_instruction.strip()
@@ -135,7 +142,7 @@ async def parse_characteristics_from_table(table_element) -> List[ItemCharacteri
                         type=char_type,
                         required=True,
                         changeable=changeable,
-                        fillInstruction=instruction if instruction else None
+                        fillInstruction=instruction if instruction else None,
                     )
                     characteristics.append(characteristic)
                     char_id += 1
@@ -156,7 +163,7 @@ async def parse_characteristics_from_table(table_element) -> List[ItemCharacteri
                 type=char_type,
                 required=True,
                 changeable=changeable,
-                fillInstruction=current_instruction
+                fillInstruction=current_instruction,
             )
             characteristics.append(characteristic)
 
