@@ -4,8 +4,8 @@ uvicorn[standard]==0.34.2
 python-multipart==0.0.20
 
 # Асинхронные драйверы
-motor==3.7.1  # MongoDB async driver
-aiofiles==24.1.0  # Async file operations
+motor==3.7.1
+aiofiles==24.1.0
 
 # Парсинг
 playwright==1.52.0

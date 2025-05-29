@@ -76,8 +76,5 @@ RUN playwright install chromium --with-deps
 
 COPY app/ ./app/
 
-# Создаем пользователя для безопасности (опционально)
-# RUN useradd -m -u 1000 parser && chown -R parser:parser /app
-# USER parser
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
