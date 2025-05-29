@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Any
 
+from app.core.auth import verify_api_key
 from app.schemas.api import (
     CreateTaskRequest,
     TaskResponse,
@@ -12,7 +13,7 @@ from app.utils.validator import validate_tender_url
 router = APIRouter()
 
 
-@router.post("/parse", response_model=TaskResponse)
+@router.post("/parse", response_model=TaskResponse, dependencies=[Depends(verify_api_key)])
 async def create_parse_task(request: CreateTaskRequest) -> TaskResponse:
     """
     Создает задачу парсинга тендера
@@ -33,7 +34,7 @@ async def create_parse_task(request: CreateTaskRequest) -> TaskResponse:
     return status
 
 
-@router.get("/task/{task_id}/status", response_model=TaskResponse)
+@router.get("/task/{task_id}/status", response_model=TaskResponse, dependencies=[Depends(verify_api_key)])
 async def get_task_status(task_id: str) -> TaskResponse:
     """
     Получает статус задачи по ID
@@ -49,7 +50,7 @@ async def get_task_status(task_id: str) -> TaskResponse:
     return status
 
 
-@router.get("/task/{task_id}/result", response_model=TaskResult)
+@router.get("/task/{task_id}/result", response_model=TaskResult, dependencies=[Depends(verify_api_key)])
 async def get_task_result(task_id: str) -> TaskResult:
     """
     Получает результат выполнения задачи
@@ -67,7 +68,7 @@ async def get_task_result(task_id: str) -> TaskResult:
     return result
 
 
-@router.delete("/task/{task_id}")
+@router.delete("/task/{task_id}", dependencies=[Depends(verify_api_key)])
 async def delete_task(task_id: str) -> Dict[str, str]:
     """Удаляет задачу из памяти"""
     task_manager = get_task_manager()
@@ -80,7 +81,7 @@ async def delete_task(task_id: str) -> Dict[str, str]:
             raise HTTPException(status_code=404, detail="Задача не найдена")
 
 
-@router.post("/cleanup")
+@router.post("/cleanup", dependencies=[Depends(verify_api_key)])
 async def cleanup_tasks(hours: int = 24) -> Dict[str, str]:
     """
     Очищает старые задачи из памяти

@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     browser_headless: bool = True
     browser_timeout: int = 30000
 
+    # Ключ доступа
+    api_key: str = None
+
     # Парсер
     max_concurrent_tasks: int = 10
     parser_max_retries: int = 3
