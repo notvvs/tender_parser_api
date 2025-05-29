@@ -1,6 +1,7 @@
 import logging
 
 from app.parsers.tender_feature_parsers.documents_info import get_tender_documents
+from app.parsers.tender_feature_parsers.general_requirements import get_general_requirements
 from app.parsers.tender_feature_parsers.tender_info import get_tender_info
 from app.parsers.tender_feature_parsers.items_info import get_tender_items
 from app.schemas.tender import TenderData
@@ -23,7 +24,7 @@ async def get_tender(url: str) -> TenderData:
             logger.debug("Парсинг позиций закупки")
             items = await get_tender_items(page)
 
-            generalRequirements = None
+            generalRequirements = await get_general_requirements(page)
 
         # Документы парсим отдельно
         logger.debug("Парсинг документов")
