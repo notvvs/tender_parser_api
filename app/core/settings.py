@@ -1,7 +1,9 @@
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
 
+# Загружаем .env файл
 load_dotenv()
+
 
 class Settings(BaseSettings):
     """Настройки приложения"""
@@ -14,9 +16,6 @@ class Settings(BaseSettings):
     browser_headless: bool = True
     browser_timeout: int = 30000
 
-    # Ключ доступа
-    api_key: str = 'secret_key'
-
     # Парсер
     max_concurrent_tasks: int = 10
     parser_max_retries: int = 3
@@ -24,8 +23,13 @@ class Settings(BaseSettings):
     # Очистка задач
     task_cleanup_hours: int = 24
 
+    # Безопасность
+    api_key: str = "def_api_key"
+
     class Config:
         env_file = ".env"
+        env_file_encoding = 'utf-8'
+        case_sensitive = False
 
 
 # Создаем экземпляр настроек

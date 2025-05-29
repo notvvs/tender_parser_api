@@ -5,8 +5,5 @@ services:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - MONGODB_URL=mongodb://host.docker.internal:27017  # Для локальной MongoDB
-      - BROWSER_HEADLESS=true
     extra_hosts:
       - "host.docker.internal:host-gateway"
