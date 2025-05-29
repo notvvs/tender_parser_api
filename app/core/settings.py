@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     browser_timeout: int = 30000
 
     # Ключ доступа
-    api_key: str = None
+    api_key: str = "api_key"
 
     # Парсер
     max_concurrent_tasks: int = 10
