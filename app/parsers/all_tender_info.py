@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 async def get_tender(url: str) -> TenderData:
     """Функция для получения всей информации о тендере"""
-    logger.info(f"Начало парсинга тендера: {url}")
 
     try:
         async with get_page() as page:
