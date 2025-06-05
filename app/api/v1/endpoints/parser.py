@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Depends
-from typing import Dict, Any
 
 from app.core.auth import verify_api_key
 from app.schemas.tender import TenderData
@@ -9,7 +8,7 @@ router = APIRouter()
 
 
 @router.post('/parse', response_model=TenderData, dependencies=[Depends(verify_api_key)])
-async def parse(url: str) -> Dict[str, Any]:
+async def parse(url: str) -> TenderData:
 
     tender = await parser.start_parsing(url)
 

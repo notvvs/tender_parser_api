@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI
 
-
+from app.api.router import router
 
 # Настройка логирования
 logging.basicConfig(
@@ -20,3 +20,5 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
+
+app.include_router(router, prefix="/api")

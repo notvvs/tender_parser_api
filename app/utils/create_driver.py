@@ -28,7 +28,6 @@ async def get_page(headless: bool = None):
                 "--disable-extensions",
                 "--disable-plugins",
                 "--disable-images",  # не загружаем картинки
-                "--disable-javascript",  # если JS не нужен для парсинга
 
                 # Уменьшение использования памяти
                 "--memory-pressure-off",
@@ -44,7 +43,7 @@ async def get_page(headless: bool = None):
             viewport={"width": 1920, "height": 1080},
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             ignore_https_errors=True,
-            java_script_enabled=True,
+            java_script_enabled=True,  # JS нужен для работы сайта
             bypass_csp=True,
             locale="ru-RU",
             timezone_id="Europe/Moscow",
