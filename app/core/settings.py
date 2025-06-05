@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-
+from pydantic import Field
 
 class Settings(BaseSettings):
     """Настройки приложения"""
@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     browser_timeout: int = 15000
 
     # Ключ доступа
-    api_key: str = "api_key"
+    api_key: str = Field(...)
 
     class Config:
         env_file = ".env"

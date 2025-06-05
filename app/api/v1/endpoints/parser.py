@@ -17,8 +17,4 @@ async def parse(url: str) -> TenderData:
             status_code=404, detail="Тендер нe обработан"
         )
 
-    # Преобразуем ObjectId в строку для JSON сериализации
-    if "_id" in tender:
-        tender["_id"] = str(tender["_id"])
-
     return tender
