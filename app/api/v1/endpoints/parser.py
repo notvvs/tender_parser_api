@@ -14,7 +14,7 @@ async def parse(url: str) -> TenderData:
 
     if not tender:
         raise HTTPException(
-            status_code=404, detail="Тендер нe обработан"
+            status_code=404, detail="Тендер не обработан"
         )
 
     return tender
