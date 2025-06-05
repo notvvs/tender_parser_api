@@ -3,7 +3,8 @@ from typing import List
 
 from playwright.async_api import Page
 
-from app.parsers.tender_feature_parsers.items_features.item import parse_item_from_row
+from app.parsers.tender_feature_parsers.items_features.common.item import parse_item_from_row
+from app.parsers.tender_feature_parsers.items_features.medical_item import parse_medical_item_from_row
 from app.schemas.items import Item
 from app.utils.pagination_button import go_to_next_page
 
@@ -14,38 +15,71 @@ async def get_tender_items(page: Page) -> List[Item]:
     """Основная функция для парсинга товаров тендера"""
     items = []
 
-    try:
-        await page.wait_for_selector("#positionKTRU", timeout=10000)
+    # Проверяем наличие медицинской таблицы ВНУТРИ любого контейнера
+    med_table = await page.query_selector("[id^='medTable']")
 
-        item_id = 1
-        page_num = 1
+    if med_table:
+        # Медицинские товары
+        logger.info("Парсинг медицинских товаров")
 
-        while True:
-            logger.info(f"Парсинг страницы {page_num}...")
+        try:
+            # Находим таблицу внутри медицинского блока
+            table = await med_table.query_selector("table.tableBlock")
+            if table:
+                # Находим все строки с товарами (те, что со стрелкой)
+                item_rows = await table.query_selector_all(
+                    "tbody.tableBlock__body > tr.tableBlock__row:has(svg)"
+                )
 
-            table = await page.query_selector("#positionKTRU table.tableBlock")
-            item_rows = await table.query_selector_all(
-                "tbody.tableBlock__body > tr.tableBlock__row"
-            )
+                logger.info(f"Найдено строк с товарами: {len(item_rows)}")
 
-            for row in item_rows:
-                class_name = await row.get_attribute("class")
-                if "truInfo_" in class_name:
-                    continue
+                item_id = 1
+                for row in item_rows:
+                    item = await parse_medical_item_from_row(page, row, item_id)
+                    if item:
+                        items.append(item)
+                        item_id += 1
 
-                item = await parse_item_from_row(page, row, item_id)
-                if item:
-                    items.append(item)
-                    item_id += 1
+        except Exception as e:
+            logger.error(f"Ошибка при парсинге медицинских товаров: {e}")
 
-            if not await go_to_next_page(page):
-                break
+    else:
+        # Обычные товары - проверяем есть ли вообще таблица
+        regular_table = await page.query_selector("#positionKTRU table.tableBlock")
 
-            page_num += 1
+        if regular_table:
+            logger.info("Парсинг обычных товаров")
 
-        logger.info(f"Всего найдено товаров: {len(items)}")
+            try:
+                item_id = 1
+                page_num = 1
 
-    except Exception as e:
-        logger.error(f"Критическая ошибка при парсинге: {e}")
+                while True:
+                    logger.info(f"Парсинг страницы {page_num}...")
 
+                    item_rows = await regular_table.query_selector_all(
+                        "tbody.tableBlock__body > tr.tableBlock__row"
+                    )
+
+                    for row in item_rows:
+                        # Пропускаем информационные строки
+                        class_name = await row.get_attribute("class")
+                        if "truInfo_" in class_name:
+                            continue
+
+                        item = await parse_item_from_row(page, row, item_id)
+                        if item:
+                            items.append(item)
+                            item_id += 1
+
+                    # Пагинация
+                    if not await go_to_next_page(page):
+                        break
+
+                    page_num += 1
+
+            except Exception as e:
+                logger.error(f"Ошибка при парсинге обычных товаров: {e}")
+
+    logger.info(f"Всего найдено товаров: {len(items)}")
     return items

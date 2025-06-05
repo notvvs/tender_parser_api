@@ -5,15 +5,15 @@ from typing import Optional
 
 from playwright.async_api import Page
 
-from app.parsers.tender_feature_parsers.items_features.characteristics import (
+from app.parsers.tender_feature_parsers.items_features.common.characteristics import (
     parse_characteristics_from_table,
 )
-from app.parsers.tender_feature_parsers.items_features.codes import (
+from app.parsers.tender_feature_parsers.items_features.common.codes import (
     extract_ktru_code,
     extract_okpd2_code,
 )
-from app.parsers.tender_feature_parsers.items_features.price import parse_price
-from app.parsers.tender_feature_parsers.items_features.quantity import parse_quantity
+from app.parsers.tender_feature_parsers.items_features.common.price import parse_price
+from app.parsers.tender_feature_parsers.items_features.common.quantity import parse_quantity
 from app.schemas.items import Item
 
 logger = logging.getLogger(__name__)
