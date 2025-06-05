@@ -14,47 +14,29 @@ async def get_page(headless: bool = None):
         browser = await p.chromium.launch(
             headless=headless,
             args=[
+                # Основные для стабильности
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
-                "--disable-accelerated-2d-canvas",
-                "--no-first-run",
-                "--no-zygote",
-                "--single-process",
+
+                # Отключение ненужных функций
                 "--disable-gpu",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-web-security",
+                "--disable-web-security",  # нужно для кросс-доменных запросов
                 "--disable-features=IsolateOrigins,site-per-process",
-                "--disable-background-networking",
-                "--disable-background-timer-throttling",
-                "--disable-backgrounding-occluded-windows",
-                "--disable-breakpad",
-                "--disable-client-side-phishing-detection",
-                "--disable-component-extensions-with-background-pages",
-                "--disable-default-apps",
+
+                # Производительность
                 "--disable-extensions",
-                "--disable-features=TranslateUI",
-                "--disable-hang-monitor",
-                "--disable-ipc-flooding-protection",
-                "--disable-popup-blocking",
-                "--disable-prompt-on-repost",
+                "--disable-plugins",
+                "--disable-images",  # не загружаем картинки
+                "--disable-javascript",  # если JS не нужен для парсинга
+
+                # Уменьшение использования памяти
+                "--memory-pressure-off",
+                "--disable-background-timer-throttling",
                 "--disable-renderer-backgrounding",
-                "--disable-sync",
-                "--metrics-recording-only",
-                "--no-service-autorun",
-                "--password-store=basic",
-                "--use-mock-keychain",
-                "--force-color-profile=srgb",
-                "--disable-domain-reliability",
-                "--disable-print-preview",
-                "--disable-speech-api",
-                "--disk-cache-size=33554432",
-                "--mute-audio",
-                "--no-default-browser-check",
-                "--no-pings",
-                "--disable-machine-cert-request",
-                "--disable-site-isolation-trials",
-                "--disable-web-resources",
+
+                # Антидетект
+                "--disable-blink-features=AutomationControlled",
             ],
         )
 

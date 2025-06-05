@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     # Playwright
     browser_headless: bool = True
-    browser_timeout: int = 30000
+    browser_timeout: int = 15000
 
     # Ключ доступа
     api_key: str = "api_key"
