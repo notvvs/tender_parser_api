@@ -65,9 +65,18 @@ async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
                     if match:
                         info_id = match.group(1)
 
-                        # Кликаем для разворачивания
-                        await chevron.click()
-                        await asyncio.sleep(1)
+                        try:
+                            # Кликаем для разворачивания
+                            await chevron.click()
+                            await asyncio.sleep(1)
+                        except Exception as e:
+                            logger.debug(f"Не удалось кликнуть на chevron: {e}")
+                            # Альтернативный способ через JavaScript
+                            try:
+                                await page.evaluate(onclick_attr)
+                                await asyncio.sleep(1)
+                            except:
+                                logger.debug("Не удалось раскрыть характеристики через JS")
 
                         # Находим таблицу с характеристиками
                         info_rows = await page.query_selector_all(
