@@ -4,7 +4,7 @@ from typing import List
 from playwright.async_api import Page
 
 from app.parsers.tender_feature_parsers.items_features.common.item import parse_item_from_row
-from app.parsers.tender_feature_parsers.items_features.medical_item import parse_medical_item_from_row
+from app.parsers.tender_feature_parsers.items_features.medicine.medical_item import parse_medical_item_from_row
 from app.schemas.items import Item
 from app.utils.pagination_button import go_to_next_page
 
