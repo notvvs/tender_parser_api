@@ -14,7 +14,8 @@ from app.parsers.tender_feature_parsers.items_features.common.codes import (
 )
 from app.parsers.tender_feature_parsers.items_features.common.price import parse_price
 from app.parsers.tender_feature_parsers.items_features.common.quantity import parse_quantity
-from app.schemas.items import Item
+from app.schemas.items import Item, ItemCharacteristic
+from app.utils.validator import clean_text
 
 logger = logging.getLogger(__name__)
 
@@ -41,21 +42,57 @@ async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
         name_lines = cell_texts[2].strip().split("\n")
         name = name_lines[0].strip()
 
-        # Единица измерения
-        unit = cell_texts[3].strip()
+        # Определяем, есть ли товарный знак (если 8 ячеек вместо 7)
+        has_trademark = len(cells) == 8
+        trademark = None
 
-        # Количество
-        quantity = parse_quantity(cell_texts[4])
-
-        # Цены
-        unit_price = parse_price(cell_texts[5])
-        total_price = parse_price(cell_texts[6])
+        if has_trademark:
+            # Есть товарный знак
+            trademark = cell_texts[3].strip()
+            unit = cell_texts[4].strip()
+            quantity = parse_quantity(cell_texts[5])
+            unit_price = parse_price(cell_texts[6])
+            total_price = parse_price(cell_texts[7])
+        else:
+            # Нет товарного знака
+            trademark = None
+            unit = cell_texts[3].strip()
+            quantity = parse_quantity(cell_texts[4])
+            unit_price = parse_price(cell_texts[5])
+            total_price = parse_price(cell_texts[6])
 
         # Характеристики
         characteristics = []
         additional_requirements = None
 
-        # Пытаемся получить характеристики
+        # Добавляем товарный знак как первую характеристику, если он есть
+        if trademark and trademark != "-" and trademark.strip():
+            # Проверяем наличие информации об эквиваленте
+            trademark_value = trademark.strip()
+
+            if "Допускается поставка эквивалента" in trademark_value:
+                # Убираем информацию об эквиваленте из значения
+                trademark_value = trademark_value.replace("Допускается поставка эквивалента", "").strip()
+                fill_instruction = "Допускается поставка эквивалента"
+                changeable = True
+            else:
+                fill_instruction = "Значение характеристики не может изменяться участником закупки"
+                changeable = False
+
+            characteristics.append(
+                ItemCharacteristic(
+                    id=1,
+                    name="Товарный знак",
+                    value=clean_text(trademark_value),
+                    unit=None,
+                    type="Качественная",
+                    required=True,
+                    changeable=changeable,
+                    fillInstruction=fill_instruction
+                )
+            )
+
+        # Пытаемся получить характеристики из развернутой таблицы
         try:
             chevron = await cells[0].query_selector(".chevronRight")
             if chevron:
@@ -93,11 +130,15 @@ async def parse_item_from_row(page: Page, row, item_id: int) -> Optional[Item]:
                                         "td:has-text('Наименование характеристики')"
                                     )
                                     if header:
-                                        characteristics = (
+                                        table_characteristics = (
                                             await parse_characteristics_from_table(
                                                 table
                                             )
                                         )
+                                        # Добавляем характеристики из таблицы, корректируя их id
+                                        for char in table_characteristics:
+                                            char.id = len(characteristics) + 1
+                                            characteristics.append(char)
                                         break
                                 except:
                                     continue
