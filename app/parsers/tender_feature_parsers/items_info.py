@@ -57,23 +57,48 @@ async def get_tender_items(page: Page) -> List[Item]:
                 while True:
                     logger.info(f"Парсинг страницы {page_num}...")
 
-                    item_rows = await regular_table.query_selector_all(
+                    # Заново находим таблицу после каждого перехода страницы
+                    current_table = await page.query_selector("#positionKTRU table.tableBlock")
+                    if not current_table:
+                        logger.error("Таблица не найдена после перехода на страницу")
+                        break
+
+                    # Находим строки товаров на текущей странице
+                    item_rows = await current_table.query_selector_all(
                         "tbody.tableBlock__body > tr.tableBlock__row"
                     )
 
+                    logger.info(f"Найдено {len(item_rows)} строк на странице {page_num}")
+
+                    # Парсим товары с текущей страницы
+                    parsed_on_page = 0
                     for row in item_rows:
                         # Пропускаем информационные строки
                         class_name = await row.get_attribute("class")
-                        if "truInfo_" in class_name:
+                        if class_name and "truInfo_" in class_name:
                             continue
 
                         item = await parse_item_from_row(page, row, item_id)
                         if item:
                             items.append(item)
                             item_id += 1
+                            parsed_on_page += 1
+
+                    logger.info(f"Распарсено {parsed_on_page} товаров на странице {page_num}")
 
                     # Пагинация
                     if not await go_to_next_page(page):
+                        logger.info("Достигнута последняя страница")
+                        break
+
+                    # Ждем загрузки новой страницы
+                    await page.wait_for_timeout(2000)  # Увеличиваем время ожидания
+
+                    # Ждем, пока таблица обновится
+                    try:
+                        await page.wait_for_selector("#positionKTRU table.tableBlock", timeout=5000)
+                    except:
+                        logger.error("Таблица не загрузилась после перехода на новую страницу")
                         break
 
                     page_num += 1
